@@ -179,3 +179,30 @@ startBtn.addEventListener("click", () => {
 });
 
 
+const zoneScreen = document.getElementById("zone-select");
+
+startBtn.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  if (name === "") {
+    alert("Please enter your name to begin!");
+    return;
+  }
+  startScreen.style.display = "none";
+  zoneScreen.style.display = "block";
+});
+
+const zoneButtons = document.querySelectorAll(".zone-btn");
+let selectedZone = "";
+
+zoneButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    selectedZone = button.dataset.zone;
+    console.log("Zone Selected:", selectedZone); // we’ll use this later
+    zoneScreen.style.display = "none";
+    battleContainer.style.display = "block";
+
+    // Future: Load zone-specific questions here!
+    // loadQuestionsByZone(selectedZone);
+  });
+});
+
