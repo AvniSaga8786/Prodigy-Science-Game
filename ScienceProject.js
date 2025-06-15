@@ -1,3 +1,9 @@
+// 🎵 Music & SFX elements
+const bgMusic = document.getElementById("bg-music");
+const correctSFX = document.getElementById("correct-sfx");
+const wrongSFX = document.getElementById("wrong-sfx");
+
+// 🧠 Game variables
 const questions = [
   {
     q: "What part of the cell makes energy?",
@@ -13,18 +19,8 @@ const questions = [
     q: "What gas do plants absorb from the air?",
     options: ["A. Carbon Dioxide", "B. Oxygen", "C. Hydrogen", "D. Nitrogen"],
     answer: "A. Carbon Dioxide"
-  },
-  {
-    q: "What is the boiling point of water?",
-    options: ["A. 90°C", "B. 80°C", "C. 100°C", "D. 120°C"],
-    answer: "C. 100°C"
-  },
-  {
-    q: "What causes day and night?",
-    options: ["A. Earth's rotation", "B. Sun's movement", "C. Moon's orbit", "D. Earth's revolution"],
-    answer: "A. Earth's rotation"
   }
-  // Add more questions as needed!
+  // Add more questions if you'd like!
 ];
 
 let currentQuestion = 0;
@@ -33,22 +29,21 @@ let playerHealth = 100;
 let playerName = "";
 let selectedZone = "";
 
+// 🎮 DOM Elements
 const qText = document.getElementById("question");
 const answerButtons = document.querySelectorAll(".choice-btn");
 const battleLog = document.getElementById("battle-log");
 const enemyHP = document.getElementById("enemy-health");
 const playerHP = document.getElementById("player-health");
 
-// Screens
 const startScreen = document.getElementById("start-screen");
 const zoneScreen = document.getElementById("zone-select");
 const battleContainer = document.querySelector(".battle-container");
-
 const startBtn = document.getElementById("start-btn");
 const nameInput = document.getElementById("player-name");
 const zoneButtons = document.querySelectorAll(".zone-btn");
 
-// Start → Zone Select
+// 🚀 Start → Zone
 startBtn.addEventListener("click", () => {
   playerName = nameInput.value.trim();
   if (playerName === "") {
@@ -59,18 +54,20 @@ startBtn.addEventListener("click", () => {
   zoneScreen.style.display = "block";
 });
 
-// Zone Select → Battle
+// 🌍 Zone → Battle
 zoneButtons.forEach(button => {
   button.addEventListener("click", () => {
     selectedZone = button.dataset.zone;
     zoneScreen.style.display = "none";
     battleContainer.style.display = "block";
     playerHP.textContent = `Player Health (${playerName}): ${playerHealth}`;
+    bgMusic.volume = 0.6;
+    bgMusic.play();
     loadQuestion();
   });
 });
 
-// Load new question
+// 🎓 Load a new question
 function loadQuestion() {
   if (currentQuestion >= questions.length) {
     battleLog.textContent = "🧠 All questions complete!";
@@ -84,14 +81,16 @@ function loadQuestion() {
   });
 }
 
-// Handle answer click
+// ⚔️ Answer logic
 function checkAnswer(selectedText) {
   const correct = questions[currentQuestion].answer;
   if (selectedText === correct) {
+    correctSFX.play();
     enemyHealth = Math.max(0, enemyHealth - 30);
     enemyHP.textContent = `Enemy Health: ${enemyHealth}`;
     battleLog.textContent = "✅ Correct! You attacked!";
   } else {
+    wrongSFX.play();
     playerHealth = Math.max(0, playerHealth - 20);
     playerHP.textContent = `Player Health (${playerName}): ${playerHealth}`;
     battleLog.textContent = "❌ Wrong! You got hit!";
@@ -103,8 +102,10 @@ function checkAnswer(selectedText) {
   setTimeout(() => {
     if (enemyHealth <= 0) {
       battleLog.textContent = `🎉 You conquered the ${selectedZone}!`;
+      bgMusic.pause();
     } else if (playerHealth <= 0) {
       battleLog.textContent = `💀 ${playerName} was defeated in the ${selectedZone}...`;
+      bgMusic.pause();
     } else {
       battleLog.textContent = "🧪 Next question!";
       loadQuestion();
@@ -112,8 +113,7 @@ function checkAnswer(selectedText) {
   }, 1500);
 }
 
-// Hook answer buttons
+// 💬 Hook buttons
 answerButtons.forEach(btn => {
   btn.addEventListener("click", () => checkAnswer(btn.textContent));
 });
-
