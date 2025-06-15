@@ -106,13 +106,12 @@ function checkAnswer(choice) {
   answerBtns.forEach(btn => btn.disabled = true);
   current++;
 
-  setTimeout(() => {
-    if (enemyHealth <= 0) return endGame("🎉 You Win!");
-    if (playerHealth <= 0) return endGame("💀 You were defeated...");
-    log.textContent = "🧪 Next question...";
-    loadQuestion();
-  }, 1200);
-}
+ setTimeout(() => {
+  if (enemyHealth <= 0) return endGame("🎉 You Win!");
+  if (playerHealth <= 0) return endGame("💀 You were defeated...");
+  log.textContent = "🧪 Next question...";
+  loadQuestion();
+}, 1200);
 
 function endGame(message) {
   document.getElementById("battle-screen").style.display = "none";
