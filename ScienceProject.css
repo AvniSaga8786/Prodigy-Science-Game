@@ -5,8 +5,15 @@ body {
   padding: 20px;
 }
 
-.battle-container {
-  background: white;
+.battle-container { ... }
+.choice-btn { ... }
+#battle-log { ... }
+#player-health,
+#enemy-health { ... }
+
+/* 🔽 Add these new ones below for the Start Screen */
+#start-screen {
+  background: #ffffffcc;
   padding: 20px;
   max-width: 500px;
   margin: auto;
@@ -14,18 +21,21 @@ body {
   box-shadow: 0 0 10px #999;
 }
 
-.choice-btn {
-  display: block;
-  margin: 10px auto;
-  padding: 10px 20px;
+#player-name {
+  padding: 10px;
   font-size: 16px;
-  width: 60%;
+  width: 80%;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+#start-btn {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-#battle-log {
-  margin-top: 20px;
-  padding: 10px;
-  background: #def;
-  border-radius: 5px;
-}
