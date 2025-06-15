@@ -1,0 +1,1 @@
+Hey everyone! I made this page, to play a online version of Prodigy Science Game! Simillar to Math, if you get the question wrong, your health decreases by 20. First person to loose all health looses the game! Just paste the URL https://avnisaga8786.github.io/Prodigy-Science-Game/ into your browser and start playing!
