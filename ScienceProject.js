@@ -1,105 +1,83 @@
 const questions = [
   {
-    q: "What part of the cell makes energy?",
+    q: "Which part of the cell makes energy?",
     options: ["A. Nucleus", "B. Mitochondria", "C. Ribosome", "D. Cell Wall"],
     answer: "B. Mitochondria"
   },
   {
-    q: "Which planet is known as the Red Planet?",
-    options: ["A. Venus", "B. Jupiter", "C. Mars", "D. Saturn"],
+    q: "What planet is the Red Planet?",
+    options: ["A. Earth", "B. Jupiter", "C. Mars", "D. Saturn"],
     answer: "C. Mars"
   },
   {
-    q: "What gas do plants absorb from the air?",
-    options: ["A. Carbon Dioxide", "B. Oxygen", "C. Hydrogen", "D. Nitrogen"],
-    answer: "A. Carbon Dioxide"
+    q: "Plants absorb which gas from the air?",
+    options: ["A. Oxygen", "B. Carbon Dioxide", "C. Hydrogen", "D. Helium"],
+    answer: "B. Carbon Dioxide"
   }
 ];
 
-let currentQuestion = 0;
-let enemyHealth = 100;
+let current = 0;
 let playerHealth = 100;
+let enemyHealth = 100;
 let playerName = "";
-let selectedZone = "";
 
-const qText = document.getElementById("question");
-const answerButtons = document.querySelectorAll(".choice-btn");
-const battleLog = document.getElementById("battle-log");
-const enemyHP = document.getElementById("enemy-health");
-const playerHP = document.getElementById("player-health");
-
-const startScreen = document.getElementById("start-screen");
-const zoneScreen = document.getElementById("zone-select");
-const battleContainer = document.querySelector(".battle-container");
 const startBtn = document.getElementById("start-btn");
 const nameInput = document.getElementById("player-name");
-const zoneButtons = document.querySelectorAll(".zone-btn");
+const zoneBtns = document.querySelectorAll(".zone-btn");
+const answerBtns = document.querySelectorAll(".choice-btn");
 
-// Start → Zone Select
 startBtn.addEventListener("click", () => {
   playerName = nameInput.value.trim();
-  if (playerName === "") {
-    alert("Please enter your name to begin!");
-    return;
-  }
-  startScreen.style.display = "none";
-  zoneScreen.style.display = "block";
+  if (!playerName) return alert("Please enter your name.");
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("zone-select").style.display = "block";
 });
 
-// Zone → Battle
-zoneButtons.forEach(button => {
-  button.addEventListener("click", () => {
-    selectedZone = button.dataset.zone;
-    zoneScreen.style.display = "none";
-    battleContainer.style.display = "block";
-    playerHP.textContent = `Player Health (${playerName}): ${playerHealth}`;
+zoneBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.getElementById("zone-select").style.display = "none";
+    document.querySelector(".battle-container").style.display = "block";
+    document.getElementById("player-health").textContent = `Player Health (${playerName}): ${playerHealth}`;
     loadQuestion();
   });
 });
 
-// Load Question
 function loadQuestion() {
-  if (currentQuestion >= questions.length) {
-    battleLog.textContent = "🧠 All questions complete!";
-    return;
-  }
-  const q = questions[currentQuestion];
-  qText.textContent = q.q;
-  answerButtons.forEach((btn, i) => {
+  const q = questions[current];
+  document.getElementById("question").textContent = q.q;
+  answerBtns.forEach((btn, i) => {
     btn.textContent = q.options[i];
     btn.disabled = false;
   });
 }
 
-// Answer Handling
 function checkAnswer(selectedText) {
-  const correct = questions[currentQuestion].answer;
+  const correct = questions[current].answer;
   if (selectedText === correct) {
     enemyHealth = Math.max(0, enemyHealth - 30);
-    enemyHP.textContent = `Enemy Health: ${enemyHealth}`;
-    battleLog.textContent = "✅ Correct! You attacked!";
+    document.getElementById("enemy-health").textContent = `Enemy Health: ${enemyHealth}`;
+    document.getElementById("battle-log").textContent = "✅ Correct! You attacked!";
   } else {
     playerHealth = Math.max(0, playerHealth - 20);
-    playerHP.textContent = `Player Health (${playerName}): ${playerHealth}`;
-    battleLog.textContent = "❌ Wrong! You got hit!";
+    document.getElementById("player-health").textContent = `Player Health (${playerName}): ${playerHealth}`;
+    document.getElementById("battle-log").textContent = "❌ Wrong! You got hit!";
   }
 
-  answerButtons.forEach(btn => btn.disabled = true);
-  currentQuestion++;
+  answerBtns.forEach(btn => btn.disabled = true);
+  current++;
 
   setTimeout(() => {
     if (enemyHealth <= 0) {
-      battleLog.textContent = `🎉 You conquered the ${selectedZone}!`;
+      document.getElementById("battle-log").textContent = "🎉 You won the battle!";
     } else if (playerHealth <= 0) {
-      battleLog.textContent = `💀 ${playerName} was defeated in the ${selectedZone}...`;
+      document.getElementById("battle-log").textContent = "💀 You were defeated...";
     } else {
-      battleLog.textContent = "🧪 Next question!";
+      document.getElementById("battle-log").textContent = "🧪 Next question!";
       loadQuestion();
     }
-  }, 1500);
+  }, 1200);
 }
 
-// Bind Answer Buttons
-answerButtons.forEach(btn => {
-  btn.addEventListener("click", () => checkAnswer(btn.textContent));
-});
+answerBtns.forEach(btn =>
+  btn.addEventListener("click", () => checkAnswer(btn.textContent))
+);
