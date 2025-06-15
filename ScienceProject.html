@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prodigy Science Game</title>
+  <link rel="stylesheet" href="ScienceProject.css" />
+</head>
+<body>
+
+  <div id="start-screen">
+    <h1>🔬 Prodigy Science Game</h1>
+    <p>Welcome, young scientist! Choose your name and begin your quest.</p>
+    <input type="text" id="player-name" placeholder="Enter your name" />
+    <button id="start-btn">Start Game</button>
+  </div>
+
+  <div id="zone-select" style="display: none;">
+    <h2>Select Your Science Zone</h2>
+    <button class="zone-btn" data-zone="Life Lab">🌿 Life Lab</button>
+    <button class="zone-btn" data-zone="Chem Caverns">⚛️ Chem Caverns</button>
+    <button class="zone-btn" data-zone="Geo Dome">🌍 Geo Dome</button>
+  </div>
+
+  <div class="battle-container" style="display: none;">
+    <h2>Science Battle</h2>
+    <p id="player-health">Player Health: 100</p>
+    <p id="enemy-health">Enemy Health: 100</p>
+    <p id="question">What part of the cell makes energy?</p>
+    <div id="answers">
+      <button class="choice-btn">A. Nucleus</button>
+      <button class="choice-btn">B. Mitochondria</button>
+      <button class="choice-btn">C. Ribosome</button>
+      <button class="choice-btn">D. Cell Wall</button>
+    </div>
+    <p id="battle-log">Answer the question to attack!</p>
+  </div>
+
+  <script defer src="ScienceProject.js"></script>
+
+<audio id="bg-music" src="Recording.m4a" loop></audio>
+
+</body>
+</html>
+
+
+
