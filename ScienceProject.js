@@ -1,7 +1,3 @@
-// 🎵 Music & SFX elements
-const bgMusic = document.getElementById("bg-music");
-const correctSFX = document.getElementById("correct-sfx");
-const wrongSFX = document.getElementById("wrong-sfx");
 
 // 🧠 Game variables
 const questions = [
