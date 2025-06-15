@@ -111,7 +111,8 @@ function checkAnswer(choice) {
   if (playerHealth <= 0) return endGame("💀 You were defeated...");
   log.textContent = "🧪 Next question...";
   loadQuestion();
-}, 1200);
+}, 1200); 
+}
 
 function endGame(message) {
   document.getElementById("battle-screen").style.display = "none";
