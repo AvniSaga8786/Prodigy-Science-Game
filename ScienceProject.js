@@ -47,8 +47,6 @@ const allQuestions = [
   { q: "Which planet is red?", options: ["A. Mars", "B. Saturn", "C. Jupiter", "D. Neptune"], answer: "A. Mars" }
 ];
 
-// 🎓 40-question science bank
-const allQuestions = [/* (your 40 questions from before go here, exactly as written) */];
 
 let current = 0;
 let playerHealth = 100;
