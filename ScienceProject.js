@@ -161,3 +161,21 @@ btnD.addEventListener("click", () => checkAnswer(btnD.textContent));
 
 loadQuestion();
 
+const startScreen = document.getElementById("start-screen");
+const battleContainer = document.querySelector(".battle-container");
+const startBtn = document.getElementById("start-btn");
+const nameInput = document.getElementById("player-name");
+
+startBtn.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  if (name === "") {
+    alert("Please enter your name to begin!");
+    return;
+  }
+
+  document.getElementById("player-health").textContent = `Player Health (${name}): 100`;
+  startScreen.style.display = "none";
+  battleContainer.style.display = "block";
+});
+
+
