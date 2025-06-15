@@ -1,5 +1,3 @@
-
-// 🧠 Game variables
 const questions = [
   {
     q: "What part of the cell makes energy?",
@@ -16,7 +14,6 @@ const questions = [
     options: ["A. Carbon Dioxide", "B. Oxygen", "C. Hydrogen", "D. Nitrogen"],
     answer: "A. Carbon Dioxide"
   }
-  // Add more questions if you'd like!
 ];
 
 let currentQuestion = 0;
@@ -25,7 +22,6 @@ let playerHealth = 100;
 let playerName = "";
 let selectedZone = "";
 
-// 🎮 DOM Elements
 const qText = document.getElementById("question");
 const answerButtons = document.querySelectorAll(".choice-btn");
 const battleLog = document.getElementById("battle-log");
@@ -39,7 +35,7 @@ const startBtn = document.getElementById("start-btn");
 const nameInput = document.getElementById("player-name");
 const zoneButtons = document.querySelectorAll(".zone-btn");
 
-// 🚀 Start → Zone
+// Start → Zone Select
 startBtn.addEventListener("click", () => {
   playerName = nameInput.value.trim();
   if (playerName === "") {
@@ -50,20 +46,18 @@ startBtn.addEventListener("click", () => {
   zoneScreen.style.display = "block";
 });
 
-// 🌍 Zone → Battle
+// Zone → Battle
 zoneButtons.forEach(button => {
   button.addEventListener("click", () => {
     selectedZone = button.dataset.zone;
     zoneScreen.style.display = "none";
     battleContainer.style.display = "block";
     playerHP.textContent = `Player Health (${playerName}): ${playerHealth}`;
-    bgMusic.volume = 0.6;
-    bgMusic.play();
     loadQuestion();
   });
 });
 
-// 🎓 Load a new question
+// Load Question
 function loadQuestion() {
   if (currentQuestion >= questions.length) {
     battleLog.textContent = "🧠 All questions complete!";
@@ -77,16 +71,14 @@ function loadQuestion() {
   });
 }
 
-// ⚔️ Answer logic
+// Answer Handling
 function checkAnswer(selectedText) {
   const correct = questions[currentQuestion].answer;
   if (selectedText === correct) {
-    correctSFX.play();
     enemyHealth = Math.max(0, enemyHealth - 30);
     enemyHP.textContent = `Enemy Health: ${enemyHealth}`;
     battleLog.textContent = "✅ Correct! You attacked!";
   } else {
-    wrongSFX.play();
     playerHealth = Math.max(0, playerHealth - 20);
     playerHP.textContent = `Player Health (${playerName}): ${playerHealth}`;
     battleLog.textContent = "❌ Wrong! You got hit!";
@@ -98,10 +90,8 @@ function checkAnswer(selectedText) {
   setTimeout(() => {
     if (enemyHealth <= 0) {
       battleLog.textContent = `🎉 You conquered the ${selectedZone}!`;
-      bgMusic.pause();
     } else if (playerHealth <= 0) {
       battleLog.textContent = `💀 ${playerName} was defeated in the ${selectedZone}...`;
-      bgMusic.pause();
     } else {
       battleLog.textContent = "🧪 Next question!";
       loadQuestion();
@@ -109,7 +99,7 @@ function checkAnswer(selectedText) {
   }, 1500);
 }
 
-// 💬 Hook buttons
+// Bind Answer Buttons
 answerButtons.forEach(btn => {
   btn.addEventListener("click", () => checkAnswer(btn.textContent));
 });
