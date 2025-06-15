@@ -15,15 +15,22 @@
 
   <div id="zone-select" style="display: none;">
     <h2>Select a Science Zone</h2>
-    <button class="zone-btn" data-zone="Life Lab">🌿 Life Lab</button>
-    <button class="zone-btn" data-zone="Chem Caverns">⚛️ Chem Caverns</button>
-    <button class="zone-btn" data-zone="Geo Dome">🌍 Geo Dome</button>
+    <button class="zone-btn" data-zone="life">🌿 Life Lab</button>
+    <button class="zone-btn" data-zone="chem">⚛️ Chem Caverns</button>
+    <button class="zone-btn" data-zone="geo">🌍 Geo Dome</button>
   </div>
 
-  <div class="battle-container" style="display: none;">
-    <h2>Science Battle</h2>
-    <p id="player-health">Player Health: 100</p>
-    <p id="enemy-health">Enemy Health: 100</p>
+  <div id="battle-screen" style="display: none;">
+    <h2 id="zone-title">Science Battle</h2>
+    <p id="xp">XP: 0</p>
+    <div class="health-bar">
+      <div id="player-health" class="health" style="width: 100%"></div>
+      <span id="player-label">Player Health</span>
+    </div>
+    <div class="health-bar">
+      <div id="enemy-health" class="health" style="width: 100%"></div>
+      <span id="enemy-label">Enemy Health</span>
+    </div>
     <p id="question">Loading...</p>
     <div id="answers">
       <button class="choice-btn">A</button>
@@ -32,6 +39,12 @@
       <button class="choice-btn">D</button>
     </div>
     <p id="battle-log">Answer the question to battle!</p>
+  </div>
+
+  <div id="end-screen" style="display: none;">
+    <h2 id="end-message">You Win!</h2>
+    <p>Your final XP: <span id="final-xp">0</span></p>
+    <button onclick="window.location.reload()">Play Again</button>
   </div>
 
   <script src="ScienceProject.js"></script>

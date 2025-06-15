@@ -1,72 +1,73 @@
 body {
   font-family: 'Segoe UI', sans-serif;
-  text-align: center;
   background: linear-gradient(to right, #9be7ff, #e0c3fc);
-  padding: 20px;
   color: #333;
+  text-align: center;
+  padding: 20px;
 }
 
 h1, h2 {
   color: #3a0066;
-  text-shadow: 1px 1px 2px #ccc;
 }
 
-#start-screen {
-  background: #ffffffdd;
-  padding: 25px;
-  max-width: 500px;
-  margin: 30px auto;
-  border-radius: 12px;
-  box-shadow: 0 0 15px #6f42c1;
-}
-
-#player-name {
-  padding: 12px;
-  font-size: 16px;
-  width: 80%;
-  margin: 12px 0;
-  border: 2px solid #6f42c1;
-  border-radius: 8px;
-}
-
-#start-btn, .zone-btn, .choice-btn {
+button {
   background: linear-gradient(to right, #ff6ec4, #7873f5);
   color: white;
-  padding: 12px 20px;
-  margin: 10px;
-  font-size: 16px;
   border: none;
   border-radius: 10px;
+  padding: 12px 20px;
+  margin: 8px;
+  font-size: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
-#start-btn:hover,
-.zone-btn:hover,
-.choice-btn:hover {
+button:hover {
   transform: scale(1.05);
   background: linear-gradient(to right, #f093fb, #f5576c);
 }
 
-#zone-select {
-  margin-top: 20px;
+input {
+  padding: 10px;
+  font-size: 16px;
+  width: 200px;
+  border: 2px solid #6f42c1;
+  border-radius: 8px;
 }
 
-.battle-container {
-  padding: 20px;
+.health-bar {
+  width: 60%;
+  height: 25px;
+  background: #ddd;
+  border-radius: 15px;
+  margin: 10px auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.health {
+  background: linear-gradient(to right, #76c893, #34a853);
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+#player-label, #enemy-label {
+  font-size: 14px;
+  position: absolute;
+  width: 100%;
+  top: 2px;
+  left: 0;
+  text-align: center;
+  font-weight: bold;
+  color: #004080;
 }
 
 #battle-log {
   margin-top: 20px;
   font-weight: bold;
   background: #fffbe6;
-  padding: 10px;
+  padding: 12px;
   border: 2px dashed #6f42c1;
   border-radius: 8px;
-}
-
-#player-health, #enemy-health {
-  font-size: 18px;
-  margin-top: 10px;
-  color: #004080;
+  display: inline-block;
 }
