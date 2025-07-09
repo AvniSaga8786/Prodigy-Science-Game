@@ -195,7 +195,7 @@
         let spellsPerPage = 4;
 
         const synthVoice=window.speechSynthesis,answerLabels=['A','B','C','D','E','F','G','H'];
-        function speakText(t,m=2e3){return new Promise(r=>{if(!t||t.trim()===''){r();return;}const u=new SpeechSynthesisUtterance(t);u.pitch=1;u.rate=1.2;let timer=setTimeout(()=>{r();},m);u.onend=()=>{clearTimeout(timer);r();};u.onerror=()=>{clearTimeout(timer);r();};synthVoice.speak(u);};)} 
+        function speakText(t,m=2e3){return new Promise(r=>{if(!t||t.trim()===''){r();return;}const u=new SpeechSynthesisUtterance(t);u.pitch=1;u.rate=1.2;let timer=setTimeout(()=>{r();},m);u.onend=()=>{clearTimeout(timer);r();};u.onerror=()=>{clearTimeout(timer);r();};synthVoice.speak(u);});}
 
         const synth=new Tone.Synth().toDestination(),polySynth=new Tone.PolySynth(Tone.Synth,{oscillator:{type:"triangle"},envelope:{attack:.02,decay:.1,sustain:.3,release:1}}).toDestination();
         function playCorrectSound(){if(Tone.context.state!=='running')Tone.start();synth.triggerAttackRelease("C5","8n");}
