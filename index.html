@@ -195,27 +195,65 @@
         let spellsPerPage = 4;
 
         const synthVoice=window.speechSynthesis,answerLabels=['A','B','C','D','E','F','G','H'];
-        function speakText(t,m=2e3){return new Promise(r=>{if(!t||t.trim()===''){r();return;}const u=new SpeechSynthesisUtterance(t);u.pitch=1;u.rate=1.2;let timer=setTimeout(()=>{r();},m);u.onend=()=>{clearTimeout(timer);r();};u.onerror=()=>{clearTimeout(timer);r();};synthVoice.speak(u);});}
+        function speakText(t, m = 2e3) {
+  return new Promise(r => {
+    if (!t || t.trim() === '') {
+      r();
+      return;
+    }
+    const u = new SpeechSynthesisUtterance(t);
+    u.pitch = 1;
+    u.rate = 1.2;
+    let timer = setTimeout(() => { r(); }, m);
+    u.onend = () => { clearTimeout(timer); r(); };
+    u.onerror = () => { clearTimeout(timer); r(); };
+    synthVoice.speak(u);
+  }); // <-- this closes the Promise
+} // <-- this closes the function
 
-        const synth=new Tone.Synth().toDestination(),polySynth=new Tone.PolySynth(Tone.Synth,{oscillator:{type:"triangle"},envelope:{attack:.02,decay:.1,sustain:.3,release:1}}).toDestination();
-        function playCorrectSound(){if(Tone.context.state!=='running')Tone.start();synth.triggerAttackRelease("C5","8n");}
-        function playIncorrectSound(){if(Tone.context.state!=='running')Tone.start();synth.triggerAttackRelease("C3","8n");}
-        function playDefeatSound(){if(Tone.context.state!=='running')Tone.start();polySynth.triggerAttackRelease(["C4","E4","G4"],"4n");setTimeout(()=>polySynth.triggerAttackRelease(["G4","C5"],"8n"),Tone.Time("4n").toMilliseconds());}
+        const synth = new Tone.Synth().toDestination(),
+      polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
 
-        const bgmSynth=new Tone.FMSynth().toDestination(),bassSynth=new Tone.MonoSynth().toDestination(),padSynth=new Tone.PolySynth(Tone.Synth).toDestination(),kickSynth=new Tone.MembraneSynth().toDestination(),snareSynth=new Tone.NoiseSynth({noise:{type:"white"},envelope:{attack:.005,decay:.1,sustain:.05,release:.2}}).toDestination(),hiHatSynth=new Tone.NoiseSynth({noise:{type:"white"},envelope:{attack:.001,decay:.05,sustain:.01,release:.1}}).toDestination();
-{        const reverb=new Tone.Reverb({decay:3,preDelay:.01}).toDestination();
-        const masterMusicGain=new Tone.Gain(0.8).toDestination();
-}        bgmSynth.connect(reverb);bassSynth.connect(reverb);padSynth.connect(reverb);kickSynth.connect(masterMusicGain);snareSynth.connect(masterMusicGain);hiHatSynth.connect(masterMusicGain);reverb.connect(masterMusicGain);
-        let melodyPart=null,bassPart=null,padPart=null,drumKickPart=null,drumSnarePart=null,drumHiHatPart=null,musicProgressionLoop=null,musicTransitionTimeout=null;
-        const maxBPM=160;
-        const drumPatterns=[
-            [
-                {time:"0:0:0",type:"kick"},{time:"0:0:2",type:"kick"},
-                {time:"0:1:0",type:"snare"},{time:"0:1:2",type:"snare"},
-                {time:"0:0:0",type:"hihat"},{time:"0:0:1",type:"hihat"},{time:"0:0:2",type:"hihat"},{time:"0:0:3",type:"hihat"},
-                {time:"0:1:0",type:"hihat"},{time:"0:1:1",type:"hihat"},{time:"0:1:2",type:"hihat"},{time:"0:1:3",type:"hihat"}
-            ]
-        ];
+const bgmSynth = new Tone.FMSynth().toDestination(),
+      bassSynth = new Tone.MonoSynth().toDestination(),
+      padSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+const reverb = new Tone.Reverb({decay: 3, preDelay: 0.01}).toDestination();
+bgmSynth.connect(reverb);
+bassSynth.connect(reverb);
+padSynth.connect(reverb);
+const kickSynth = new Tone.MembraneSynth().toDestination();
+const snareSynth = new Tone.NoiseSynth({
+  noise: { type: "white" },
+  envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
+}).toDestination();
+const hiHatSynth = new Tone.NoiseSynth({
+  noise: { type: "white" },
+  envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.1 }
+}).toDestination();
+const masterMusicGain = new Tone.Gain(0.8).toDestination();
+            const drumPatterns = [
+  [
+    // 🥁 Kick
+    {time: "0:0:0", type: "kick"},
+    {time: "0:0:2", type: "kick"},
+
+    // 🪇 Snare
+    {time: "0:1:0", type: "snare"},
+    {time: "0:1:2", type: "snare"},
+
+    // 🎶 Hi-Hat
+    {time: "0:0:0", type: "hihat"},
+    {time: "0:0:1", type: "hihat"},
+    {time: "0:0:2", type: "hihat"},
+    {time: "0:0:3", type: "hihat"},
+    {time: "0:1:0", type: "hihat"},
+    {time: "0:1:1", type: "hihat"},
+    {time: "0:1:2", type: "hihat"},
+    {time: "0:1:3", type: "hihat"}
+  ]
+];
+            
+        ;
         let currentDrumPatternLevel=drumPatterns.length-1;
         let currentMusicCycleIndex=0; 
         const musicCycles=[
@@ -295,6 +333,9 @@
                  Tone.Transport.start();
             }
         }
+let musicProgressionLoop = null;
+let musicTransitionTimeout = null;
+
         function stopBGM(){
             console.log("Debug Music: stopBGM called.");
             if(musicProgressionLoop){musicProgressionLoop.stop();musicProgressionLoop.dispose();musicProgressionLoop=null;}
@@ -313,6 +354,13 @@
                 });
             }
         }
+let melodyPart = null,
+    bassPart = null,
+    padPart = null,
+    drumKickPart = null,
+    drumSnarePart = null,
+    drumHiHatPart = null;
+
         function stopAllMusicParts(){
             if(melodyPart){melodyPart.stop();melodyPart.dispose();melodyPart=null;}
             if(bassPart){bassPart.stop();bassPart.dispose();bassPart=null;}
