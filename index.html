@@ -1,52 +1,900 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Prodigy Science Game</title>
-  <link rel="stylesheet" href="ScienceProject.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prodigy Science Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(to right, #F0F, #0FF); color: #E0E0E0; margin: 0; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; }
+        h1, h2, h3 { margin: 0.5em 0; font-weight: 800; background-image: linear-gradient(45deg, #78FFD6, #60A5FA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; text-shadow: 0 0 8px rgba(120, 255, 214, 0.3), 0 0 15px rgba(96, 165, 250, 0.2); }
+        .game-container { background-color: rgba(32, 32, 32, 0.9); padding: 40px; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 1152px; margin: 25px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 800px; box-sizing: border-box; border: 2px solid rgba(120, 255, 214, 0.5); }
+        .hidden { display: none !important; }
+        .screen-overlay { background: rgba(40, 40, 40, 0.95); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 12px; box-shadow: 0 0 35px rgba(0,0,0,0.7); padding: 50px 70px; max-width: 700px; z-index: 1000; box-sizing: border-box; text-align: center; border: 2px solid rgba(120, 255, 214, 0.7); color: #E0E0E0; }
+        button { background-image: linear-gradient(45deg, #34D399, #06B6D4); color: white; border: none; padding: 18px 36px; border-radius: 14px; font-size: 1.4rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); font-weight: 700; margin: 20px; }
+        button:hover { background-image: linear-gradient(45deg, #06B6D4, #34D399); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7); transform: translateY(-4px); }
+        button:disabled { background-image: none; background-color: #444; color: #888; cursor: not-allowed; box-shadow: none; transform: translateY(0); }
+        input[type="text"] { background-color: #333; color: #E0E0E0; padding: 1.25rem; width: 20rem; border-radius: 0.5rem; border: 1px solid #555; font-size: 1.25rem; outline: none; box-shadow: inset 0 1px 5px rgba(0,0,0,0.4); margin-bottom: 2rem; text-align: center; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+        input[type="text"]:focus { border-color: #60A5FA; box-shadow: inset 0 1px 5px rgba(0,0,0,0.4), 0 0 0 2px rgba(96, 165, 250, 0.5); }
+        #zones { display: flex; flex-wrap: wrap; justify-content: center; gap: 32px; margin-top: 32px; }
+        #zones button { padding: 20px 40px; font-size: 2rem; background-image: linear-gradient(45deg, #60A5FA, #78FFD6); }
+        #zones button:hover { background-image: linear-gradient(45deg, #78FFD6, #60A5FA); }
+        #hud { display: flex; flex-direction: column; justify-content: space-around; align-items: center; width: 100%; max-width: 1152px; margin-bottom: 40px; gap: 32px; }
+        #player-info, #enemy-info { background-color: #282828; padding: 1.75rem; border-radius: 0.75rem; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: left; border: 1px solid #444; color: #E0E0E0; }
+        #player-info h3, #enemy-info h3 { font-size: 1.875rem; margin-bottom: 1rem; background-image: linear-gradient(45deg, #78FFD6, #60A5FA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; }
+        #player-info div, #enemy-info div { font-size: 1.5rem; color: #A0A0A0; }
+        .health-bar { background-color: #444; border-radius: 0.5rem; height: 32px; width: 100%; overflow: hidden; margin-top: 1rem; border: 2px solid rgba(0,0,0,0.5); }
+        .health-fill { height: 100%; width: 100%; background-color: #34D399; transition: all 0.3s ease-out; }
+        .health-fill.low { background-color: #EF4444; } .health-fill.medium { background-color: #FBBF24; } .health-fill.high { background-color: #34D399; }
+        #question-screen { background-color: #282828; padding: 40px; border-radius: 1rem; box-shadow: 0 8px 20px rgba(0,0,0,0.4); width: 100%; text-align: center; border: 1px solid #444; color: #E0E0E0; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; }
+        #question-text-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 2rem; }
+        #question-text { font-size: 2.5rem; font-weight: 600; line-height: 1.5; color: #E0E0E0; margin-bottom: 0; }
+        .speak-button { font-size: 1.8rem; cursor: pointer; color: #78FFD6; transition: transform 0.2s ease-in-out; vertical-align: middle; }
+        .speak-button:hover { transform: scale(1.1); color: #60A5FA; }
+        #answer-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        #answer-buttons button { padding: 1.25rem 2rem; font-size: 1.5rem; border-radius: 0.75rem; border: 1px solid #60A5FA; background-color: #333; color: #E0E0E0; cursor: pointer; transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        #answer-buttons button.correct-answer { background-color: #10B981 !important; border: 2px solid #059669 !important; color: white; }
+        #answer-buttons button.incorrect-answer { background-color: #EF4444 !important; border: 2px solid #DC2626 !important; color: white; }
+        #answer-buttons button:hover { background-color: #444; box-shadow: 0 6px 12px rgba(0,0,0,0.3); border-color: #78FFD6; transform: translateY(-2px); }
+        #feedback-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 2.5rem; min-height: 3rem; }
+        #feedback { font-weight: 700; font-size: 1.875rem; color: #60A5FA; margin-top: 0; }
+        #feedback.success { color: #34D399; } #feedback.damage { color: #EF4444; }
+        #zone-name { font-size: 3rem; font-weight: 800; margin-top: 2rem; margin-bottom: 2rem; background-image: linear-gradient(45deg, #FBBF24, #EF4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; }
+        #level-xp { font-size: 1.5rem; margin-bottom: 2.5rem; color: #A0A0A0; }
+        #current-level-display { font-size: 1.5rem; margin-bottom: 2.5rem; color: #A0A0A0; } /* New style for level display */
+        #custom-alert { background-color: #282828; border: 2px solid #FBBF24; padding: 3rem; color: #E0E0E0; }
+        #custom-alert h3 { font-size: 1.875rem; font-weight: 600; margin-bottom: 1rem; background-image: linear-gradient(45deg, #FBBF24, #EF4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; }
+        #custom-alert button { background-image: linear-gradient(45deg, #FBBF24, #D97706); box-shadow: 0 3px 10px rgba(0,0,0,0.5); }
+        #custom-alert button:hover { background-image: linear-gradient(45deg, #D97706, #FBBF24); }
+        #congrats-screen h2, #sorry-screen h2, #zone-completed-screen h2, #game-over-screen h2 { font-size: 4rem; }
+        #congrats-screen .message-container, #sorry-screen .message-container, #zone-completed-screen .message-container, #game-over-screen .message-container, #custom-alert .message-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 1rem; }
+        #congrats-screen p, #sorry-screen p, #zone-completed-screen p, #game-over-screen p, #custom-alert-message { font-size: 2.2rem; line-height: 1.4; color: #E0E0E0; margin-bottom: 0; }
+        #congrats-screen h2 { color: #34D399; background: none; -webkit-text-fill-color: unset; }
+        #sorry-screen h2 { color: #EF4444; background: none; -webkit-text-fill-color: unset; }
+        #zone-completed-screen h2 { color: #60A5FA; background: none; -webkit-text-fill-color: unset; }
+        #game-over-screen h2 { color: #FBBF24; background: none; -webkit-text-fill-color: unset; }
+        #spell-choice-container { background-color: rgba(32, 32, 32, 0.95); border-radius: 1rem; box-shadow: 0 0 30px rgba(0,0,0,0.7); padding: 30px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; text-align: center; border: 2px solid #78FFD6; max-width: 90%; }
+        #spell-choice-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-top: 20px; } /* Bigger min-width for spell buttons */
+        .spell-choice-button { background-image: linear-gradient(45deg, #4F46E5, #9333EA); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3); font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.3; } /* Increased padding/font-size */
+        .spell-choice-button:hover:not(:disabled) { background-image: linear-gradient(45deg, #9333EA, #4F46E5); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5); transform: translateY(-2px); }
+        .spell-choice-button .spell-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; } /* Larger spell name */
+        .spell-choice-button .spell-info { font-size: 0.85rem; color: #E0E0E0; } /* Larger spell info */
+        .spell-choice-button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #spell-pagination-controls { margin-top: 20px; display: flex; justify-content: center; gap: 10px; }
+        #spell-pagination-controls button { padding: 8px 15px; font-size: 1rem; margin: 0; }
+        #spell-page-info { color: #A0A0A0; font-size: 1.1rem; margin: 0 10px; } /* Increased font size for pagination info */
+
+        @media (max-width: 768px) {
+            body { padding: 10px; } .game-container { padding: 20px; min-height: 480px; max-width: 95%; } .screen-overlay { padding: 30px 40px; max-width: 95%; }
+            h1 { font-size: 2.5rem; } h2 { font-size: 2rem; } h3 { font-size: 1.6rem; } #question-screen { padding: 20px; }
+            #question-text, #question-text-container { font-size: 1.8rem; } #answer-buttons button { font-size: 1.2rem; padding: 14px 24px; }
+            #feedback, #feedback-container { font-size: 1.4rem; } #zone-name { font-size: 2.5rem; } #level-xp { font-size: 1.2rem; }
+            #congrats-screen h2, #sorry-screen h2, #zone-completed-screen h2, #game-over-screen h2 { font-size: 3rem; }
+            #congrats-screen p, #sorry-screen p, #zone-completed-screen p, #game-over-screen p, #custom-alert-message { font-size: 1.5rem; }
+            .health-bar { height: 25px; } .speak-button { font-size: 1.5rem; }
+            /* Adjusted grid for mobile to ensure 2 columns fit well on smaller screens */
+            #spell-choice-buttons { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; } 
+            .spell-choice-button { font-size: 0.85rem; padding: 8px 12px; } .spell-choice-button .spell-name { font-size: 1rem; } .spell-choice-button .spell-info { font-size: 0.75rem; }
+            #spell-pagination-controls button { padding: 6px 10px; font-size: 0.9rem; }
+        }
+
+        /* Enforce 4 columns for wider views explicitly if 130px min doesn't guarantee it */
+        @media (min-width: 769px) {
+            #spell-choice-buttons {
+                grid-template-columns: repeat(4, 1fr); /* Explicitly 4 columns for desktop/tablet */
+                max-width: 600px; /* Limit overall width if needed to keep 4 cols tighter */
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
 </head>
 <body>
-
-  <div id="start-screen">
-    <h1>🔬 Prodigy Science Game</h1>
-    <input type="text" id="player-name" placeholder="Enter your name" />
-    <button id="start-btn">Start Game</button>
-  </div>
-
-  <div id="zone-select" style="display: none;">
-    <h2>Select a Science Zone</h2>
-    <button class="zone-btn" data-zone="life">🌿 Life Lab</button>
-    <button class="zone-btn" data-zone="chem">⚛️ Chem Caverns</button>
-    <button class="zone-btn" data-zone="geo">🌍 Geo Dome</button>
-  </div>
-
-  <div id="battle-screen" style="display: none;">
-    <h2 id="zone-title">Science Battle</h2>
-    <p id="xp">XP: 0</p>
-    <div class="health-bar">
-      <div id="player-health" class="health" style="width: 100%"></div>
-      <span id="player-label">Player Health</span>
+    <div id="welcome-screen" class="game-container">
+        <h1>Welcome to Science Battle!</h1>
+        <input id="player-name-input" type="text" placeholder="Enter your name" />
+        <button id="continue-game-btn" class="hidden">Continue Adventure</button>
+        <button id="start-game-btn">Start Game</button>
     </div>
-    <div class="health-bar">
-      <div id="enemy-health" class="health" style="width: 100%"></div>
-      <span id="enemy-label">Enemy Health</span>
-    </div>
-    <p id="question">Loading...</p>
-    <div id="answers">
-      <button class="choice-btn">A</button>
-      <button class="choice-btn">B</button>
-      <button class="choice-btn">C</button>
-      <button class="choice-btn">D</button>
-    </div>
-    <p id="battle-log">Answer the question to battle!</p>
-  </div>
 
-  <div id="end-screen" style="display: none;">
-    <h2 id="end-message">You Win!</h2>
-    <p>Your final XP: <span id="final-xp">0</span></p>
-    <button onclick="window.location.reload()">Play Again</button>
-  </div>
+    <div id="zone-screen" class="hidden game-container">
+        <h2>Select Your Zone</h2>
+        <div id="zones"></div>
+    </div>
 
-  <script src="ScienceProject.js"></script>
+    <div id="battle-screen" class="hidden game-container">
+        <div id="hud">
+            <div id="player-info">
+                <h3 id="player-name"></h3>
+                <div>Health: <span id="player-health-text"></span></div>
+                <div class="health-bar"><div id="player-health-bar" class="health-fill"></div></div>
+            </div>
+            <div id="enemy-info">
+                <h3 id="enemy-name"></h3>
+                <div>Health: <span id="enemy-health-text"></span></div>
+                <div class="health-bar"><div id="enemy-health-bar" class="health-fill"></div></div>
+            </div>
+        </div>
+        <h2 id="zone-name"></h2>
+        <div id="level-xp"></div>
+        <div id="current-level-display"></div> <!-- New element for visual level display -->
+        <button id="start-question-btn">Show Question</button>
+    </div>
+
+    <div id="question-screen" class="hidden game-container">
+        <div id="question-text-container">
+            <p id="question-text"></p>
+            <span class="speak-button" data-target="question-text">🔊</span>
+        </div>
+        <div id="answer-buttons"></div>
+        <div id="feedback-container">
+            <div id="feedback"></div>
+            <span class="speak-button" data-target="feedback">🔊</span>
+        </div>
+    </div>
+
+    <div id="spell-choice-container" class="hidden">
+        <h3>Choose Your Attack!</h3>
+        <div id="spell-choice-buttons"></div>
+        <div id="spell-pagination-controls">
+            <button id="more-spells-btn">More Spells</button>
+            <span id="spell-page-info"></span> </div>
+    </div>
+
+    <div id="congrats-screen" class="hidden screen-overlay">
+        <h2>Correct!</h2>
+        <div class="message-container">
+            <p id="congrats-message"></p>
+            <span class="speak-button" data-target="congrats-message">🔊</span>
+        </div>
+        <button id="continue-btn">Continue</button>
+    </div>
+
+    <div id="sorry-screen" class="hidden screen-overlay">
+        <h2>Wrong!</h2>
+        <div class="message-container">
+            <p id="sorry-message"></p>
+            <span class="speak-button" data-target="sorry-message">🔊</span>
+        </div>
+        <button id="retry-btn">Try Again</button>
+    </div>
+
+    <div id="zone-completed-screen" class="hidden screen-overlay">
+        <h2>Level Cleared!</h2>
+        <div class="message-container">
+            <p id="zone-completed-message"></p>
+            <span class="speak-button" data-target="zone-completed-message">🔊</span>
+        </div>
+        <button id="continue-next-level-btn">Continue to Next Battle</button>
+    </div>
+
+    <div id="game-over-screen" class="hidden screen-overlay">
+        <h2>Game Over!</h2>
+        <div class="message-container">
+            <p id="game-over-message"></p>
+            <span class="speak-button" data-target="game-over-message">🔊</span>
+        </div>
+        <button id="retry-zone-btn">Try This Zone Again</button>
+    </div>
+
+    <div id="custom-alert" class="hidden screen-overlay">
+        <h3>Alert!</h3>
+        <div class="message-container">
+            <p id="custom-alert-message"></p>
+            <span class="speak-button" data-target="custom-alert-message">🔊</span>
+        </div>
+        <button id="custom-alert-ok-btn">OK</button>
+    </div>
+
+    <script>
+        const D=document,welcomeScreen=D.getElementById("welcome-screen"),zoneScreen=D.getElementById("zone-screen"),battleScreen=D.getElementById("battle-screen"),questionScreen=D.getElementById("question-screen"),congratsScreen=D.getElementById("congrats-screen"),sorryScreen=D.getElementById("sorry-screen"),zoneCompletedScreen=D.getElementById("zone-completed-screen"),gameOverScreen=D.getElementById("game-over-screen"),customAlert=D.getElementById("custom-alert"),customAlertMessage=D.getElementById("custom-alert-message"),customAlertOkBtn=D.getElementById("custom-alert-ok-btn"),playerNameInput=D.getElementById("player-name-input"),startGameBtn=D.getElementById("start-game-btn"),continueGameBtn=D.getElementById("continue-game-btn"),zonesDiv=D.getElementById("zones"),playerNameDisplay=D.getElementById("player-name"),playerHealthText=D.getElementById("player-health-text"),playerHealthBar=D.getElementById("player-health-bar"),enemyNameDisplay=D.getElementById("enemy-name"),enemyHealthText=D.getElementById("enemy-health-text"),enemyHealthBar=D.getElementById("enemy-health-bar"),zoneNameDisplay=D.getElementById("zone-name"),levelXPDisplay=D.getElementById("level-xp"),currentLevelDisplay=D.getElementById("current-level-display"),questionText=D.getElementById("question-text"),answerButtons=D.getElementById("answer-buttons"),feedback=D.getElementById("feedback"),spellChoiceContainer=D.getElementById("spell-choice-container"),spellChoiceButtons=D.getElementById("spell-choice-buttons"),continueBtn=D.getElementById("continue-btn"),congratsMessage=D.getElementById("congrats-message"),sorryMessage=D.getElementById("sorry-message"),retryBtn=D.getElementById("retry-btn"),continueNextLevelBtn=D.getElementById("continue-next-level-btn"),retryZoneBtn=D.getElementById("retry-zone-btn"),zoneCompletedMessage=D.getElementById("zone-completed-message"),gameOverMessage=D.getElementById("game-over-message"),startQuestionBtn=D.getElementById("start-question-btn"),moreSpellsBtn=D.getElementById("more-spells-btn"),spellPageInfo=D.getElementById("spell-page-info");
+
+        let playerName="",playerHealth=100,playerMaxHealth=100,enemyName="",enemyHealth=0,enemyMaxHealth=0,enemySpellUsesRemaining={},level=1,xp=0,xpNeeded=50, 
+            currentZone=null,currentQuestionIndex=0,shuffledQuestions=[],lastSelectedZoneIndex=0,isGameOverDueToLoss=false,currentBattleTurn=0,playerUnlockedSpells=[],playerSpellUsesRemaining={},currentSpellPageIndex=0;
+        let spellsPerPage = 4;
+
+        const synthVoice=window.speechSynthesis,answerLabels=['A','B','C','D','E','F','G','H'];
+        function speakText(t,m=2e3){return new Promise(r=>{if(!t||t.trim()===''){r();return;}const u=new SpeechSynthesisUtterance(t);u.pitch=1;u.rate=1.2;let timer=setTimeout(()=>{r();},m);u.onend=()=>{clearTimeout(timer);r();};u.onerror=()=>{clearTimeout(timer);r();};synthVoice.speak(u);};)} 
+
+        const synth=new Tone.Synth().toDestination(),polySynth=new Tone.PolySynth(Tone.Synth,{oscillator:{type:"triangle"},envelope:{attack:.02,decay:.1,sustain:.3,release:1}}).toDestination();
+        function playCorrectSound(){if(Tone.context.state!=='running')Tone.start();synth.triggerAttackRelease("C5","8n");}
+        function playIncorrectSound(){if(Tone.context.state!=='running')Tone.start();synth.triggerAttackRelease("C3","8n");}
+        function playDefeatSound(){if(Tone.context.state!=='running')Tone.start();polySynth.triggerAttackRelease(["C4","E4","G4"],"4n");setTimeout(()=>polySynth.triggerAttackRelease(["G4","C5"],"8n"),Tone.Time("4n").toMilliseconds());}
+
+        const bgmSynth=new Tone.FMSynth().toDestination(),bassSynth=new Tone.MonoSynth().toDestination(),padSynth=new Tone.PolySynth(Tone.Synth).toDestination(),kickSynth=new Tone.MembraneSynth().toDestination(),snareSynth=new Tone.NoiseSynth({noise:{type:"white"},envelope:{attack:.005,decay:.1,sustain:.05,release:.2}}).toDestination(),hiHatSynth=new Tone.NoiseSynth({noise:{type:"white"},envelope:{attack:.001,decay:.05,sustain:.01,release:.1}}).toDestination();
+{        const reverb=new Tone.Reverb({decay:3,preDelay:.01}).toDestination();
+        const masterMusicGain=new Tone.Gain(0.8).toDestination();
+}        bgmSynth.connect(reverb);bassSynth.connect(reverb);padSynth.connect(reverb);kickSynth.connect(masterMusicGain);snareSynth.connect(masterMusicGain);hiHatSynth.connect(masterMusicGain);reverb.connect(masterMusicGain);
+        let melodyPart=null,bassPart=null,padPart=null,drumKickPart=null,drumSnarePart=null,drumHiHatPart=null,musicProgressionLoop=null,musicTransitionTimeout=null;
+        const maxBPM=160;
+        const drumPatterns=[
+            [
+                {time:"0:0:0",type:"kick"},{time:"0:0:2",type:"kick"},
+                {time:"0:1:0",type:"snare"},{time:"0:1:2",type:"snare"},
+                {time:"0:0:0",type:"hihat"},{time:"0:0:1",type:"hihat"},{time:"0:0:2",type:"hihat"},{time:"0:0:3",type:"hihat"},
+                {time:"0:1:0",type:"hihat"},{time:"0:1:1",type:"hihat"},{time:"0:1:2",type:"hihat"},{time:"0:1:3",type:"hihat"}
+            ]
+        ];
+        let currentDrumPatternLevel=drumPatterns.length-1;
+        let currentMusicCycleIndex=0; 
+        const musicCycles=[
+            {name:"Mysterio",bgm:{oscillator:{type:"sine"},envelope:{attack:.05,decay:.2,sustain:.1,release:.5}},bass:{oscillator:{type:"sawtooth"},envelope:{attack:.005,decay:.05,sustain:.01,release:.1}},pad:{oscillator:{type:"triangle"},envelope:{attack:.05,decay:.05,sustain:.01,release:.05}},
+                melody:[{t:"0:0:0",n:"C4",d:"8n"},{t:"0:0:2",n:"E4",d:"8n"},{t:"0:0:4",n:"G4",d:"8n"},{t:"0:0:6",n:"E4",d:"8n"},{t:"0:1:0",n:"A4",d:"8n"},{t:"0:1:2",n:"G4",d:"8n"},{t:"0:1:4",n:"E4",d:"8n"},{t:"0:1:6",n:"C4",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"C2",d:"2n"},{t:"0:1:0",n:"F2",d:"2n"},{t:"0:2:0",n:"C2",d:"2n"},{t:"0:3:0",n:"G1",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["C4","E4","G4"],d:"4m"}]}, 
+            {name:"Heroic",bgm:{oscillator:{type:"sawtooth"},envelope:{attack:.01,decay:.1,sustain:.05,release:.2}},bass:{oscillator:{type:"triangle"},envelope:{attack:.001,decay:.02,sustain:.005,release:.05}},pad:{oscillator:{type:"sine"},envelope:{attack:.01,decay:.01,sustain:.005,release:.02}},
+                melody:[{t:"0:0:0",n:"C5",d:"8n"},{t:"0:0:2",n:"G4",d:"8n"},{t:"0:0:4",n:"E5",d:"8n"},{t:"0:0:6",n:"G5",d:"8n"},{t:"0:1:0",n:"C5",d:"8n"},{t:"0:1:2",n:"A4",d:"8n"},{t:"0:1:4",n:"F4",d:"8n"},{t:"0:1:6",n:"D5",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"C3",d:"2n"},{t:"0:1:0",n:"G2",d:"2n"},{t:"0:2:0",n:"A2",d:"2n"},{t:"0:3:0",n:"F2",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["C4","E4","G4"],d:"4m"}]},
+            {name:"Cosmic",bgm:{oscillator:{type:"triangle"},envelope:{attack:.1,decay:.3,sustain:.2,release:.8}},bass:{oscillator:{type:"square"},envelope:{attack:.01,decay:.08,sustain:.02,release:.15}},pad:{oscillator:{type:"sawtooth"},envelope:{attack:.1,decay:.1,sustain:.05,release:.1}},
+                melody:[{t:"0:0:0",n:"D4",d:"8n"},{t:"0:0:2",n:"F4",d:"8n"},{t:"0:0:4",n:"A4",d:"8n"},{t:"0:0:6",n:"C5",d:"8n"},{t:"0:1:0",n:"B4",d:"8n"},{t:"0:1:2",n:"G4",d:"8n"},{t:"0:1:4",n:"E4",d:"8n"},{t:"0:1:6",n:"C4",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"D2",d:"2n"},{t:"0:1:0",n:"A2",d:"2n"},{t:"0:2:0",n:"B2",d:"2n"},{t:"0:3:0",n:"G2",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["D4","F4","A4"],d:"4m"}]},
+            {name:"Alien",bgm:{oscillator:{type:"square"},envelope:{attack:.01,decay:.05,sustain:.02,release:.1}},bass:{oscillator:{type:"fatsawtooth"},envelope:{attack:.001,decay:.01,sustain:.005,release:.02}},pad:{oscillator:{type:"square"},envelope:{attack:.01,decay:.01,sustain:.005,release:.01}},
+                melody:[{t:"0:0:0",n:"G4",d:"8n"},{t:"0:0:2",n:"D5",d:"8n"},{t:"0:0:4",n:"B4",d:"8n"},{t:"0:0:6",n:"G4",d:"8n"},{t:"0:1:0",n:"E4",d:"8n"},{t:"0:1:2",n:"C4",d:"8n"},{t:"0:1:4",n:"A3",d:"8n"},{t:"0:1:6",n:"G3",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"G1",d:"2n"},{t:"0:1:0",n:"C2",d:"2n"},{t:"0:2:0",n:"D2",d:"2n"},{t:"0:3:0",n:"G1",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["G3","D4","G4"],d:"4m"}]},
+            {name:"Enchanted",bgm:{oscillator:{type:"sine"},envelope:{attack:.2,decay:.5,sustain:.4,release:1.0}},bass:{oscillator:{type:"triangle"},envelope:{attack:.05,decay:.1,sustain:.05,release:.2}},pad:{oscillator:{type:"fatsine"},envelope:{attack:.5,decay:1.0,sustain:.8,release:1.5}},
+                melody:[{t:"0:0:0",n:"E4",d:"8n"},{t:"0:0:2",n:"G#4",d:"8n"},{t:"0:0:4",n:"B4",d:"8n"},{t:"0:0:6",n:"C5",d:"8n"},{t:"0:1:0",n:"B4",d:"8n"},{t:"0:1:2",n:"G#4",d:"8n"},{t:"0:1:4",n:"E4",d:"8n"},{t:"0:1:6",n:"D#4",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"E2",d:"2n"},{t:"0:1:0",n:"A2",d:"2n"},{t:"0:2:0",n:"B2",d:"2n"},{t:"0:3:0",n:"E2",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["E3","G#3","B3"],d:"4m"}]},
+            {name:"DeepSea",bgm:{oscillator:{type:"triangle"},envelope:{attack:.1,decay:.4,sustain:.2,release:.7}},bass:{oscillator:{type:"square"},envelope:{attack:.02,decay:.1,sustain:.03,release:.1}},pad:{oscillator:{type:"sine"},envelope:{attack:.3,decay:.6,sustain:.4,release:1.0}},
+                melody:[{t:"0:0:0",n:"A4",d:"8n"},{t:"0:0:2",n:"C5",d:"8n"},{t:"0:0:4",n:"E5",d:"8n"},{t:"0:0:6",n:"G5",d:"8n"},{t:"0:1:0",n:"E5",d:"8n"},{t:"0:1:2",n:"C5",d:"8n"},{t:"0:1:4",n:"A4",d:"8n"},{t:"0:1:6",n:"F4",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"A2",d:"2n"},{t:"0:1:0",n:"D3",d:"2n"},{t:"0:2:0",n:"E3",d:"2n"},{t:"0:3:0",n:"A2",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["A3","C4","E4"],d:"4m"}]},
+            {name:"Futuristic",bgm:{oscillator:{type:"square"},envelope:{attack:.01,decay:.1,sustain:.05,release:.15}},bass:{oscillator:{type:"triangle"},envelope:{attack:.001,decay:.02,sustain:.005,release:.05}},pad:{oscillator:{type:"fatsquare"},envelope:{attack:.05,decay:.1,sustain:.05,release:.1}},
+                melody:[{t:"0:0:0",n:"C5",d:"8n"},{t:"0:0:2",n:"F5",d:"8n"},{t:"0:0:4",n:"G5",d:"8n"},{t:"0:0:6",n:"C6",d:"8n"},{t:"0:1:0",n:"G5",d:"8n"},{t:"0:1:2",n:"F5",d:"8n"},{t:"0:1:4",n:"E5",d:"8n"},{t:"0:1:6",n:"D5",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"C2",d:"2n"},{t:"0:1:0",n:"G1",d:"2n"},{t:"0:2:0",n:"A1",d:"2n"},{t:"0:3:0",n:"C2",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["C4","E4","G4"],d:"4m"}]},
+            {name:"Ancient",bgm:{oscillator:{type:"sawtooth"},envelope:{attack:.15,decay:.3,sustain:.2,release:.6}},bass:{oscillator:{type:"sine"},envelope:{attack:.05,decay:.1,sustain:.05,release:.15}},pad:{oscillator:{type:"triangle"},envelope:{attack:.2,decay:.4,sustain:.3,release:.8}},
+                melody:[{t:"0:0:0",n:"E4",d:"8n"},{t:"0:0:2",n:"D4",d:"8n"},{t:"0:0:4",n:"C4",d:"8n"},{t:"0:0:6",n:"B3",d:"8n"},{t:"0:1:0",n:"C4",d:"8n"},{t:"0:1:2",n:"D4",d:"8n"},{t:"0:1:4",n:"E4",d:"8n"},{t:"0:1:6",n:"F4",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"E2",d:"2n"},{t:"0:1:0",n:"C2",d:"2n"},{t:"0:2:0",n:"D2",d:"2n"},{t:"0:3:0",n:"A1",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["E3","G3","B3"],d:"4m"}]},
+            {name:"Volcanic",bgm:{oscillator:{type:"fatsawtooth"},envelope:{attack:.02,decay:.1,sustain:.05,release:.2}},bass:{oscillator:{type:"square"},envelope:{attack:.005,decay:.03,sustain:.01,release:.05}},pad:{oscillator:{type:"sawtooth"},envelope:{attack:.01,decay:.05,sustain:.01,release:.05}},
+                melody:[{t:"0:0:0",n:"C#5",d:"8n"},{t:"0:0:2",n:"A#4",d:"8n"},{t:"0:0:4",n:"G#4",d:"8n"},{t:"0:0:6",n:"F#4",d:"8n"},{t:"0:1:0",n:"G#4",d:"8n"},{t:"0:1:2",n:"A#4",d:"8n"},{t:"0:1:4",n:"C#5",d:"8n"},{t:"0:1:6",n:"D#5",d:"8n"}],
+                bassNotes:[{t:"0:0:0",n:"C#2",d:"2n"},{t:"0:1:0",n:"G#1",d:"2n"},{t:"0:2:0",n:"A#1",d:"2n"},{t:"0:3:0",n:"C#2",d:"2n"}],
+                padChords:[{t:"0:0:0",n:["C#4","E4","G#4"],d:"4m"}]}
+        ];
+        function updDrums(l){if(drumKickPart){drumKickPart.stop();drumKickPart.dispose();}if(drumSnarePart){drumSnarePart.stop();drumSnarePart.dispose();}if(drumHiHatPart){drumHiHatPart.stop();drumHiHatPart.dispose();}const p=drumPatterns[Math.min(l,drumPatterns.length-1)];drumKickPart=new Tone.Part((t,v)=>{if(v.type==="kick")kickSynth.triggerAttackRelease("C2","8n",t);},p.filter(d=>d.type==="kick"));drumKickPart.loop=true;drumKickPart.loopEnd="4m";drumKickPart.start(0);drumSnarePart=new Tone.Part((t,v)=>{if(v.type==="snare")snareSynth.triggerAttackRelease("8n",t);},p.filter(d=>d.type==="snare"));drumSnarePart.loop=true;drumSnarePart.loopEnd="4m";drumSnarePart.start(0);drumHiHatPart=new Tone.Part((t,v)=>{if(v.type==="hihat")hiHatSynth.triggerAttackRelease("16n",t);},p.filter(d=>d.type==="hihat"));drumHiHatPart.loop=true;drumHiHatPart.loopEnd="4m";drumHiHatPart.start(0);}
+        
+        function initMusicProg(){
+            if (Tone.context.state !== 'running') {
+                console.warn("Debug Music: initMusicProg called but AudioContext is not running. Aborting music initialization.");
+                return;
+            }
+
+            if(musicProgressionLoop){musicProgressionLoop.stop();musicProgressionLoop.dispose();musicProgressionLoop=null;}
+            stopAllMusicParts();
+            currentMusicCycleIndex = Math.floor(Math.random() * musicCycles.length); 
+            const c=musicCycles[currentMusicCycleIndex];
+            Tone.Transport.bpm.value=maxBPM;
+            updDrums(currentDrumPatternLevel);
+            bgmSynth.set(c.bgm);
+            bassSynth.set(c.bass);
+            padSynth.set(c.pad);
+            masterMusicGain.gain.value=0.8;
+            console.log(`Debug Music: Starting new music cycle: ${c.name} (Index: ${currentMusicCycleIndex})`); 
+
+            melodyPart=new Tone.Part((t,v)=>{bgmSynth.triggerAttackRelease(v.n,v.d,t);},c.melody);melodyPart.loop=true;melodyPart.loopEnd="2m";melodyPart.start(0);
+            bassPart=new Tone.Part((t,v)=>{bassSynth.triggerAttackRelease(v.n,v.d,t);},c.bassNotes);bassPart.loop=true;bassPart.loopEnd="2m";bassPart.start(0);
+            padPart=new Tone.Part((t,v)=>{padSynth.triggerAttackRelease(v.n,v.d,t);},c.padChords);padPart.loop=true;padPart.loopEnd="2m";padPart.start(0);
+            
+            if(musicTransitionTimeout){clearTimeout(musicTransitionTimeout);musicTransitionTimeout=null;}
+            musicTransitionTimeout=setTimeout(()=>{
+                initMusicProg(); 
+            },20*1000); 
+            
+            musicProgressionLoop=new Tone.Loop((t)=>{
+                if(bgmSynth&&bgmSynth.detune)bgmSynth.detune.linearRampToValueAtTime(Math.min(1200,bgmSynth.detune.value+20),Tone.Transport.nextSubdivision("4m"));
+                if(bassSynth&&bassSynth.detune)bassSynth.detune.linearRampToValueAtTime(Math.min(1200,bassSynth.detune.value+20),Tone.Transport.nextSubdivision("4m"));
+                if(padSynth&&padSynth.detune)padSynth.detune.linearRampToValueAtTime(Math.min(1200,padSynth.detune.value+20),Tone.Transport.nextSubdivision("4m"));
+            },"4m");
+            musicProgressionLoop.start(0);
+            if (Tone.Transport.state !== 'started') {
+                 Tone.Transport.start();
+            }
+        }
+        function stopBGM(){
+            console.log("Debug Music: stopBGM called.");
+            if(musicProgressionLoop){musicProgressionLoop.stop();musicProgressionLoop.dispose();musicProgressionLoop=null;}
+            if(musicTransitionTimeout){clearTimeout(musicTransitionTimeout);musicTransitionTimeout=null;}
+            stopAllMusicParts();
+            if (Tone.Transport.state === 'started') {
+                Tone.Transport.stop();
+                Tone.Transport.cancel();
+                console.log("Debug Music: Tone.Transport stopped and cancelled.");
+            }
+            if (Tone.context.state === 'running') {
+                Tone.context.suspend().then(() => {
+                    console.log("Debug Music: Tone.context suspended.");
+                }).catch(e => {
+                    console.error("Debug Music: Error suspending Tone.context:", e);
+                });
+            }
+        }
+        function stopAllMusicParts(){
+            if(melodyPart){melodyPart.stop();melodyPart.dispose();melodyPart=null;}
+            if(bassPart){bassPart.stop();bassPart.dispose();bassPart=null;}
+            if(padPart){padPart.stop();padPart.dispose();padPart=null;}
+            if(drumKickPart){drumKickPart.stop();drumKickPart.dispose();drumKickPart=null;}
+            if(drumSnarePart){drumSnarePart.stop();drumSnarePart.dispose();drumSnarePart=null;}
+            if(drumHiHatPart){drumHiHatPart.stop();drumHiHatPart.dispose();drumHiHatPart=null;}
+        }
+
+        const zones=[
+            {name:"Physics",enemies:["Gravity Golem","Photon Phantom"],questions:[
+                {question:"What force pulls objects towards Earth's center?",answers:[{text:"Gravity",correct:true},{text:"Friction",correct:false},{text:"Magnetism",correct:false},{text:"Tension",correct:false}]},{question:"Which state of matter has a definite volume but no definite shape?",answers:[{text:"Liquid",correct:true},{text:"Solid",correct:false},{text:"Gas",correct:false},{text:"Plasma",correct:false}]},{question:"What measures the amount of substance in an object?",answers:[{text:"Mass",correct:true},{text:"Weight",correct:false},{text:"Volume",correct:false},{text:"Density",correct:false}]},{question:"The tendency of an object to resist changes in its state of motion is called?",answers:[{text:"Inertia",correct:true},{text:"Momentum",correct:false},{text:"Acceleration",correct:false},{text:"Velocity",correct:false}]},{question:"What energy is stored in a stretched spring?",answers:[{text:"Potential Energy",correct:true},{text:"Kinetic Energy",correct:false},{text:"Thermal Energy",correct:false},{text:"Chemical Energy",correct:false}]}]},
+            {name:"Chemistry",enemies:["Acidic Alchemist","Molecular Monster"],questions:[
+                {question:"What is the chemical symbol for Oxygen?",answers:[{text:"O",correct:true},{text:"Ox",correct:false},{text:"Oy",correct:false},{text:"Oz",correct:false}]},{question:"Which element is a noble gas and is used in neon signs?",answers:[{text:"Neon",correct:true},{text:"Argon",correct:false},{text:"Helium",correct:false},{text:"Xenon",correct:false}]},{question:"What is the pH of a neutral solution?",answers:[{text:"7",correct:true},{text:"0",correct:false},{text:"14",correct:false},{text:"5",correct:false}]},{question:"Which type of bond involves sharing of electrons between atoms?",answers:[{text:"Covalent Bond",correct:true},{text:"Ionic Bond",correct:false},{text:"Metallic Bond",correct:false},{text:"Hydrogen Bond",correct:false}]},{question:"What is the smallest unit of an element that maintains its chemical identity?",answers:[{text:"Atom",correct:true},{text:"Molecule",correct:false},{text:"Compound",correct:false},{text:"Ion",correct:false}]}]},
+            {name:"Biology",enemies:["Cell Crusher","DNA Dragon"],questions:[
+                {question:"What is the basic unit of life?",answers:[{text:"Cell",correct:true},{text:"Tissue",correct:false},{text:"Organ",correct:false},{text:"System",correct:false}]},{question:"Which part of a plant absorbs water and nutrients from the soil?",answers:[{text:"Roots",correct:true},{text:"Leaves",correct:false},{text:"Stem",correct:false},{text:"Flower",correct:false}]},{question:"What is the process by which plants make their own food?",answers:[{text:"Photosynthesis",correct:true},{text:"Respiration",correct:false},{text:"Transpiration",correct:false},{text:"Germination",correct:false}]},{question:"Which organ pumps blood throughout the human body?",answers:[{text:"Heart",correct:true},{text:"Lungs",correct:false},{text:"Liver",correct:false},{text:"Kidneys",correct:false}]},{question:"What is the name of the chemical that carries genetic information in cells?",answers:[{text:"DNA",correct:true},{text:"RNA",correct:false},{text:"Protein",correct:false},{text:"Carbohydrate",correct:false}]}]}
+        ];
+        const allSpells=[
+            {id:"s001",name:"Basic Attack",type:"attack",power:1,rechargeText:"None",accuracy:"excellent",minDamage:.15,maxDamage:.25,isPermanentNoRecharge:true},
+            {id:"s002",name:"Fire Bolt",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:.3,maxDamage:.45,isPermanentNoRecharge:true},
+            {id:"s003",name:"Minor Heal",type:"heal",power:2,rechargeText:"2/battle",accuracy:"excellent",minHeal:.2,maxHeal:.35,isPermanentNoRecharge:false,maxUsesPerBattle:2},
+            {id:"s004",name:"Ice Shard",type:"attack",power:4,rechargeText:"1/battle",accuracy:"okay",minDamage:.4,maxDamage:.6,isPermanentNoRecharge:false,maxUsesPerBattle:1},
+            {id:"s005",name:"Life Tap",type:"heal",power:3,rechargeText:"1/battle",accuracy:"excellent",minHeal:.3,maxHeal:.5,isPermanentNoRecharge:false,maxUsesPerBattle:1,initialWaitTurns:1},
+            {id:"s006",name:"Thunder Clap",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:.6,maxDamage:.9,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:2},
+            {id:"s007",name:"Aqua Jet",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:.2,maxDamage:.3,isPermanentNoRecharge:true},
+            {id:"s008",name:"Stone Pillar",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:.45,maxDamage:.65,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s009",name:"Nature's Touch",type:"heal",power:2,rechargeText:"2/battle",accuracy:"excellent",minHeal:.25,maxHeal:.4,isPermanentNoRecharge:false,maxUsesPerBattle:2},
+            {id:"s010",name:"Shadow Strike",type:"attack",power:3,rechargeText:"None",accuracy:"okay",minDamage:.35,maxDamage:.5,isPermanentNoRecharge:true},
+            {id:"s011",name:"Light Beam",type:"attack",power:5,rechargeText:"1/battle",accuracy:"good",minDamage:.5,maxDamage:.7,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:1},
+            {id:"s012",name:"Healing Mist",type:"heal",power:4,rechargeText:"1/battle",accuracy:"excellent",minHeal:.4,maxHeal:.6,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:2},
+            {id:"s013",name:"Wind Gust",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:.22,maxDamage:.32,isPermanentNoRecharge:true},
+            {id:"s014",name:"Magma Burst",type:"attack",power:4,rechargeText:"1/battle",accuracy:"okay",minDamage:.42,maxDamage:.62,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s015",name:"Vitalize",type:"heal",power:3,rechargeText:"2/battle",accuracy:"excellent",minHeal:.3,maxHeal:.45,isPermanentNoRecharge:false,maxUsesPerBattle:2},
+            {id:"s016",name:"Poison Dart",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:.28,maxDamage:.4,isPermanentNoRecharge:true},
+            {id:"s017",name:"Crystal Shard",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:.55,maxDamage:.8,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:1},
+            {id:"s018",name:"Barrier",type:"heal",power:3,rechargeText:"1/battle",accuracy:"excellent",minHeal:.35,maxHeal:.55,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:2},
+            {id:"s019",name:"Sonic Boom",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:.25,maxDamage:.35,isPermanentNoRecharge:true},
+            {id:"s020",name:"Boulder Toss",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:.48,maxDamage:.68,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s021",name:"Solar Flare",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:.65,maxDamage:.95,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:3},
+            {id:"s022",name:"Lunar Embrace",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:.5,maxHeal:.7,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:3},
+            {id:"s023",name:"Acid Rain",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:.33,maxDamage:.48,isPermanentNoRecharge:true},
+            {id:"s024",name:"Plasma Ball",type:"attack",power:4,rechargeText:"1/battle",accuracy:"excellent",minDamage:.47,maxDamage:.67,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s025",name:"Leaf Tornado",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:.28,maxDamage:.38,isPermanentNoRecharge:true},
+            {id:"s026",name:"Electric Shock",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:.52,maxDamage:.72,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s027",name:"Starlight Burst",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:.7,maxDamage:1,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:4},
+            {id:"s028",name:"Divine Word",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:.6,maxHeal:.8,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:4},
+            {id:"s029",name:"Sand Blast",type:"attack",power:3,rechargeText:"None",accuracy:"okay",minDamage:.38,maxDamage:.53,isPermanentNoRecharge:true},
+            {id:"s030",name:"Geyser",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:.58,maxDamage:.78,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s031",name:"Root Bind",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:.3,maxDamage:.4,isPermanentNoRecharge:true},
+            {id:"s032",name:"Vapor Cloud",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:.43,maxDamage:.58,isPermanentNoRecharge:true},
+            {id:"s033",name:"Shield Bash",type:"attack",power:4,rechargeText:"1/battle",accuracy:"excellent",minDamage:.6,maxDamage:.8,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s034",name:"Purify",type:"heal",power:3,rechargeText:"2/battle",accuracy:"excellent",minHeal:.38,maxHeal:.58,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s035",name:"Blizzard",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:.75,maxDamage:1.1,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:5},
+            {id:"s036",name:"Life Bloom",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:.7,maxHeal:.9,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:5},
+            {id:"s037",name:"Rock Slide",type:"attack",power:3,rechargeText:"None",accuracy:"okay",minDamage:.48,maxDamage:.63,isPermanentNoRecharge:true},
+            {id:"s038",name:"Solar Beam",type:"attack",power:5,rechargeText:"1/battle",accuracy:"good",minDamage:.8,maxDamage:1.2,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:6},
+            {id:"s039",name:"Dark Vortex",type:"attack",power:4,rechargeText:"None",accuracy:"good",minDamage:.53,maxDamage:.73,isPermanentNoRecharge:true},
+            {id:"s040",name:"Regrowth",type:"heal",power:4,rechargeText:"2/battle",accuracy:"excellent",minHeal:.45,maxHeal:.65,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s041",name:"Meteor Shower",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:.9,maxDamage:1.3,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:7},
+            {id:"s042",name:"Celestial Blessing",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:.8,maxHeal:1.0,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:7},
+            {id:"s043",name:"Tidal Wave",type:"attack",power:4,rechargeText:"None",accuracy:"excellent",minDamage:.58,maxDamage:.78,isPermanentNoRecharge:true},
+            {id:"s044",name:"Quake",type:"attack",power:5,rechargeText:"1/battle",accuracy:"okay",minDamage:.95,maxDamage:1.4,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:8},
+            {id:"s045",name:"Spirit Link",type:"heal",power:4,rechargeText:"1/battle",accuracy:"excellent",minHeal:.5,maxHeal:.7,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:8},
+            {id:"s046",name:"Spark Nova",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:.63,maxDamage:.83,isPermanentNoRecharge:true},
+            {id:"s047",name:"Toxic Cloud",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:.68,maxDamage:.88,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s048",name:"Stone Skin",type:"heal",power:2,rechargeText:"2/battle",accuracy:"excellent",minHeal:.3,maxHeal:.5,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s049",name:"Flaming Orb",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.0,maxDamage:1.5,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:9},
+            {id:"s050",name:"Arcane Barrier",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:.9,maxHeal:1.1,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:9},
+            {id:"s051",name:"Gale Force",type:"attack",power:3,rechargeText:"None",accuracy:"excellent",minDamage:.7,maxDamage:.9,isPermanentNoRecharge:true},
+            {id:"s052",name:"Poison Bloom",type:"attack",power:4,rechargeText:"1/battle",accuracy:"okay",minDamage:.75,maxDamage:.95,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s053",name:"Lunar Orb",type:"attack",power:5,rechargeText:"1/battle",accuracy:"good",minDamage:1.05,maxDamage:1.55,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:10},
+            {id:"s054",name:"Astral Heal",type:"heal",power:4,rechargeText:"2/battle",accuracy:"excellent",minHeal:.6,maxHeal:.8,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s055",name:"Frozen Blast",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.1,maxDamage:1.6,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:11},
+            {id:"s056",name:"Phoenix Feather",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:1.0,maxHeal:1.2,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:11},
+            {id:"s057",name:"Earthquake",type:"attack",power:4,rechargeText:"None",accuracy:"okay",minDamage:.8,maxDamage:1.0,isPermanentNoRecharge:true},
+            {id:"s058",name:"Darkness Bolt",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:.85,maxDamage:1.05,isPermanentNoRecharge:true},
+            {id:"s059",name:"Holy Smite",type:"attack",power:5,rechargeText:"1/battle",accuracy:"excellent",minDamage:1.15,maxDamage:1.65,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s060",name:"Celestial Ray",type:"heal",power:4,rechargeText:"1/battle",accuracy:"excellent",minHeal:.7,maxHeal:.9,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:12},
+            {id:"s061",name:"Inferno",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.2,maxDamage:1.7,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:13},
+            {id:"s062",name:"Vampiric Touch",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:.9,maxDamage:1.1,isPermanentNoRecharge:true},
+            {id:"s063",name:"Chronostasis",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:.95,maxDamage:1.15,isPermanentNoRecharge:true},
+            {id:"s064",name:"Gravity Well",type:"attack",power:5,rechargeText:"1/battle",accuracy:"okay",minDamage:1.25,maxDamage:1.75,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:14},
+            {id:"s065",name:"Temporal Shift",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:1.1,maxHeal:1.3,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:14},
+            {id:"s066",name:"Chain Lightning",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:1.0,maxDamage:1.2,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s067",name:"Solar Nova",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.3,maxDamage:1.8,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:15},
+            {id:"s068",name:"Geomancy",type:"attack",power:3,rechargeText:"None",accuracy:"excellent",minDamage:1.05,maxDamage:1.25,isPermanentNoRecharge:true},
+            {id:"s069",name:"Frost Nova",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:1.1,maxDamage:1.3,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s070",name:"Lifegiver",type:"heal",power:5,rechargeText:"2/battle",accuracy:"excellent",minHeal:.8,maxHeal:1.0,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s071",name:"Black Hole",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.4,maxDamage:1.9,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:16},
+            {id:"s072",name:"Cosmic Shield",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:1.2,maxHeal:1.4,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:16},
+            {id:"s073",name:"Spirit Bolt",type:"attack",power:3,rechargeText:"None",accuracy:"okay",minDamage:1.15,maxDamage:1.35,isPermanentNoRecharge:true},
+            {id:"s074",name:"Stone Curse",type:"attack",power:4,rechargeText:"1/battle",accuracy:"poor",minDamage:1.2,maxDamage:1.4,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s075",name:"Blinding Light",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:1.25,maxDamage:1.45,isPermanentNoRecharge:true},
+            {id:"s076",name:"Arcane Barrage",type:"attack",power:5,rechargeText:"1/battle",accuracy:"good",minDamage:1.5,maxDamage:2.0,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:17},
+            {id:"s077",name:"Nature's Fury",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.6,maxDamage:2.1,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:18},
+            {id:"s078",name:"Vital Surge",type:"heal",power:5,rechargeText:"2/battle",accuracy:"excellent",minHeal:.9,maxHeal:1.1,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s079",name:"Soul Drain",type:"attack",power:3,rechargeText:"None",accuracy:"okay",minDamage:1.3,maxDamage:1.5,isPermanentNoRecharge:true},
+            {id:"s080",name:"Infernal Grasp",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:1.35,maxDamage:1.55,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s081",name:"Time Warp",type:"attack",power:2,rechargeText:"None",accuracy:"excellent",minDamage:1.4,maxDamage:1.6,isPermanentNoRecharge:true},
+            {id:"s082",name:"Starfall",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.7,maxDamage:2.2,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:19},
+            {id:"s083",name:"Lunar Rejuvenation",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:1.3,maxHeal:1.5,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:19},
+            {id:"s084",name:"Volcanic Eruption",type:"attack",power:5,rechargeText:"1/battle",accuracy:"okay",minDamage:1.8,maxDamage:2.3,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:20},
+            {id:"s085",name:"Geomantic Shield",type:"heal",power:4,rechargeText:"1/battle",accuracy:"excellent",minHeal:.7,maxHeal:.9,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:20},
+            {id:"s086",name:"Spirit Nova",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:1.45,maxDamage:1.65,isPermanentNoRecharge:true},
+            {id:"s087",name:"Chrono Blast",type:"attack",power:4,rechargeText:"1/battle",accuracy:"good",minDamage:1.5,maxDamage:1.7,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s088",name:"Dreamweaver",type:"heal",power:3,rechargeText:"2/battle",accuracy:"excellent",minHeal:.4,maxHeal:.6,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s089",name:"Cosmic Ray",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:1.9,maxDamage:2.4,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:21},
+            {id:"s090",name:"Aetherial Restoration",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:1.4,maxHeal:1.6,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:21},
+            {id:"s091",name:"Shatter",type:"attack",power:3,rechargeText:"None",accuracy:"excellent",minDamage:1.55,maxDamage:1.75,isPermanentNoRecharge:true},
+            {id:"s092",name:"Arcane Explosion",type:"attack",power:4,rechargeText:"1/battle",accuracy:"okay",minDamage:1.6,maxDamage:1.8,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s093",name:"Holy Nova",type:"attack",power:5,rechargeText:"1/battle",accuracy:"good",minDamage:2.0,maxDamage:2.5,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:22},
+            {id:"s094",name:"Astral Shield",type:"heal",power:4,rechargeText:"2/battle",accuracy:"excellent",minHeal:.8,maxHeal:1.0,isPermanentNoReCharge:false,maxUsesPerBattle:2},
+            {id:"s095",name:"Doom Bolt",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:2.1,maxDamage:2.6,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:23},
+            {id:"s096",name:"Life Conduit",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:1.5,maxHeal:1.7,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:23},
+            {id:"s097",name:"Sonic Blast",type:"attack",power:3,rechargeText:"None",accuracy:"good",minDamage:1.65,maxDamage:1.85,isPermanentNoRecharge:true},
+            {id:"s098",name:"Glacial Spike",type:"attack",power:4,rechargeText:"1/battle",accuracy:"okay",minDamage:1.7,maxDamage:1.9,isPermanentNoReCharge:false,maxUsesPerBattle:1},
+            {id:"s099",name:"World Ender",type:"attack",power:5,rechargeText:"1/battle",accuracy:"poor",minDamage:2.2,maxDamage:2.7,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:24},
+            {id:"s100",name:"Universal Mend",type:"heal",power:5,rechargeText:"1/battle",accuracy:"excellent",minHeal:1.6,maxHeal:1.8,isPermanentNoReCharge:false,maxUsesPerBattle:1,initialWaitTurns:24}
+        ];
+
+        function getLevelEffectivenessMultiplier(currentLevel) {
+            return 1.0; 
+        }
+
+        // --- Core Health Calculation Logic ---
+        // This function now uses a precise iterative calculation for levels > 5,
+        // and directly returns the specified values for levels 1-5.
+        function getEnemyHealth(l) {
+            const specificHealth = {
+                1: 550,
+                2: 1020,
+                3: 1220, // Adjusted for a more even increase
+                4: 1420, // Adjusted for a more even increase
+                5: 1620  // Adjusted for a more even increase
+            };
+
+            if (l in specificHealth) {
+                console.log(`Debug HP: getEnemyHealth for level ${l} returning specific health: ${specificHealth[l]}`);
+                return specificHealth[l];
+            } else if (l > 5) {
+                // Calculation for levels beyond 5: starts from level 5's health and adds 1000 for each subsequent level.
+                let health = specificHealth[5]; 
+                for (let i = 6; i <= l; i++) {
+                    health += 1000; 
+                }
+                console.log(`Debug HP: getEnemyHealth for level ${l} (iterative) returning: ${health}`);
+                return health;
+            }
+            console.log(`Debug HP: getEnemyHealth for unexpected level ${l} returning default 550.`);
+            return 550; 
+        }
+        function getPlayerHealth(){
+            // Player health now also uses the same scaling logic as enemy health
+            const playerHP = getEnemyHealth(level); 
+            console.log(`Debug HP: getPlayerHealth for level ${level} returning: ${playerHP}`);
+            return playerHP;
+        }
+
+        function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+        function showAlert(m){customAlertMessage.textContent=m;customAlert.classList.remove("hidden");if(synthVoice.speaking)synthVoice.cancel();speakText(m);}
+        customAlertOkBtn.addEventListener("click",()=>{customAlert.classList.add("hidden");if(synthVoice.speaking)synthVoice.cancel();});
+        function hideAllScreens(){welcomeScreen.classList.add("hidden");zoneScreen.classList.add("hidden");battleScreen.classList.add("hidden");questionScreen.classList.add("hidden");congratsScreen.classList.add("hidden");sorryScreen.classList.add("hidden");zoneCompletedScreen.classList.add("hidden");gameOverScreen.classList.add("hidden");customAlert.classList.add("hidden");spellChoiceContainer.classList.add("hidden");if(synthVoice.speaking)synthVoice.cancel(); Tone.Transport.cancel();}
+
+        function saveGame(){const d={playerName:playerName,level:level,xp:xp,xpNeeded:xpNeeded,lastSelectedZoneIndex:lastSelectedZoneIndex,playerUnlockedSpells:playerUnlockedSpells.map(s=>s.id)};localStorage.setItem('prodigyScienceGameSave',JSON.stringify(d));}
+        function loadGame(){const d=localStorage.getItem('prodigyScienceGameSave');if(d){const g=JSON.parse(d);playerName=g.playerName;level=g.level;xp=g.xp;xpNeeded=g.xpNeeded;lastSelectedZoneIndex=g.lastSelectedZoneIndex;
+            playerUnlockedSpells = allSpells.slice(); 
+            currentZone=zones[lastSelectedZoneIndex];shuffledQuestions=shuffleArray([...currentZone.questions]);
+            playerMaxHealth=getPlayerHealth();playerHealth=playerMaxHealth; 
+            enemyName=currentZone.enemies[Math.floor(Math.random()*currentZone.enemies.length)];
+            enemyMaxHealth=getEnemyHealth(level);enemyHealth=enemyMaxHealth; 
+            console.log(`Debug HP: Game Loaded - Player Max HP: ${playerMaxHealth}, Player Current HP: ${playerHealth}, Enemy Max HP: ${enemyMaxHealth}, Enemy Current HP: ${enemyHealth}`);
+            return true;}return false;}
+
+        function showWelcomeScreen(){hideAllScreens();welcomeScreen.classList.remove("hidden");stopBGM();if(localStorage.getItem('prodigyScienceGameSave')){continueGameBtn.classList.remove('hidden');startGameBtn.textContent="New Adventure";playerNameInput.value=JSON.parse(localStorage.getItem('prodigyScienceGameSave')).playerName;playerNameInput.disabled=true;}else{continueGameBtn.classList.add('hidden');startGameBtn.textContent="Start Game";playerNameInput.value='';playerNameInput.disabled=false;}}
+        function showZoneScreen(){hideAllScreens();zoneScreen.classList.remove("hidden");
+            zonesDiv.innerHTML="";zones.forEach((z,idx)=>{const b=D.createElement("button");b.textContent=z.name;b.classList.add("zone-button");b.addEventListener("click",()=>startZone(idx));zonesDiv.appendChild(b);});}
+        function showBattleScreen(){
+            hideAllScreens();
+            battleScreen.classList.remove("hidden");
+            updateHUD();
+            // Only enable 'Show Question' button if there are questions left for the current enemy
+            startQuestionBtn.disabled = (currentQuestionIndex >= shuffledQuestions.length);
+        }
+        function showQuestionScreen(){hideAllScreens();questionScreen.classList.remove("hidden");setQuestion();}
+        function showCongratsScreen(){hideAllScreens();congratsScreen.classList.remove("hidden");speakText(congratsMessage.textContent);}
+        function showSorryScreen(){hideAllScreens();sorryScreen.classList.remove("hidden");speakText(sorryMessage.textContent);}
+        function showZoneCompletedScreen(){hideAllScreens();zoneCompletedScreen.classList.remove("hidden");speakText(zoneCompletedMessage.textContent);}
+        function showBattleResultScreen(playerWon,damage=0){
+            hideAllScreens();
+            if(playerWon){
+                congratsScreen.querySelector('h2').textContent = "Congrats, you win!";
+                congratsMessage.textContent=`You defeated ${enemyName}! Click the button below to move onto the next level!`;
+                showCongratsScreen();
+            }else{
+                gameOverScreen.querySelector('h2').textContent = "Sorry, you lost!";
+                gameOverMessage.textContent=`Oh no, ${playerName}! Don't give up! Click the button below to retry the level!`;
+                if(damage>0)gameOverMessage.textContent+=` You took ${Math.floor(damage)} damage!`;
+                retryZoneBtn.textContent="Retry Battle";
+                isGameOverDueToLoss=true;
+                gameOverScreen.classList.remove("hidden");playDefeatSound();speakText(gameOverMessage.textContent);
+            }
+        }
+
+        // --- Zone Start / Game Initialization ---
+        function startZone(idx,isLoaded=false){
+            lastSelectedZoneIndex=idx;currentZone=zones[idx];
+            if(!isLoaded){
+                level=1;xp=0;xpNeeded=50; 
+                playerUnlockedSpells=[...allSpells]; 
+            }
+            currentQuestionIndex=0;shuffledQuestions=shuffleArray([...currentZone.questions]);
+            
+            playerMaxHealth=getPlayerHealth();
+            playerHealth=playerMaxHealth;
+            enemyName=currentZone.enemies[Math.floor(Math.random()*currentZone.enemies.length)];
+            enemyMaxHealth=getEnemyHealth(level);
+            enemyHealth=enemyMaxHealth;
+
+            currentBattleTurn=0;
+            resetSpellUsesForBattle();
+            console.log(`Debug HP: Starting Zone ${currentZone.name} (Level ${level}): Player Max HP: ${playerMaxHealth}, Player Current HP: ${playerHealth}, Enemy Max HP: ${enemyMaxHealth}, Enemy Current HP: ${enemyHealth}`);
+            showBattleScreen();
+            saveGame();
+        }
+
+        // --- Battle Retry Logic ---
+        function retryCurrentBattle(){
+            console.log(`Debug HP: Retrying battle. Current Level: ${level}.`);
+            playerMaxHealth = getPlayerHealth(); 
+            playerHealth = playerMaxHealth; 
+            enemyMaxHealth = getEnemyHealth(level); 
+            enemyHealth = enemyMaxHealth; 
+            currentBattleTurn = 0;
+            resetSpellUsesForBattle();
+            updateHUD();
+            console.log(`Debug HP: After retry - Player Max HP: ${playerMaxHealth}, Player Current HP: ${playerHealth}, Enemy Max HP: ${enemyMaxHealth}, Enemy Current HP: ${enemyHealth}`);
+            showBattleScreen();
+            isGameOverDueToLoss = false;
+            saveGame();
+        }
+
+        // --- HUD Update ---
+        function updateHUD(){
+            playerNameDisplay.textContent=playerName;playerHealthText.textContent=`${playerHealth}/${playerMaxHealth}`;
+            playerHealthBar.style.width=`${(playerHealth/playerMaxHealth)*100}%`;
+            playerHealthBar.className='health-fill '+(playerHealth<=playerMaxHealth*.25?'low':(playerHealth<=playerMaxHealth*.5?'medium':'high'));
+            enemyNameDisplay.textContent=enemyName;enemyHealthText.textContent=`${enemyHealth}/${enemyMaxHealth}`;
+            enemyHealthBar.style.width=`${(enemyHealth/enemyMaxHealth)*100}%`;
+            enemyHealthBar.className='health-fill '+(enemyHealth<=enemyMaxHealth*.25?'low':(enemyHealth<=enemyMaxHealth*.5?'medium':'high'));
+            zoneNameDisplay.textContent=currentZone?currentZone.name:"N/A";
+            levelXPDisplay.textContent=`Level: ${level} | XP: ${xp}/${xpNeeded}`;
+            currentLevelDisplay.textContent = `Current Level: ${level}`; // Update visual level display
+            console.log(`Debug HUD: Player: ${playerHealth}/${playerMaxHealth}, Enemy: ${enemyHealth}/${enemyMaxHealth}`);
+        }
+
+        function renderSpellChoiceButtons(){
+            spellChoiceButtons.innerHTML='';
+            const availableSpells = allSpells.slice().sort((a,b)=>a.id.localeCompare(b.id)); 
+            
+            const startIndex = currentSpellPageIndex * spellsPerPage;
+            const endIndex = Math.min(startIndex + spellsPerPage, availableSpells.length);
+            const spellsToDisplay = availableSpells.slice(startIndex, endIndex);
+
+            spellsToDisplay.forEach(spell=>{
+                const btn=D.createElement('button');
+                btn.classList.add('spell-choice-button');
+                btn.dataset.spellId=spell.id;
+                let usesText='';
+                if(spell.rechargeText==="None"){usesText='Recharge: None';}
+                else{usesText=`Uses: ${playerSpellUsesRemaining[spell.id]||0}/${spell.maxUsesPerBattle}`;}
+                btn.innerHTML=`<div class="spell-name">${spell.name}</div><div class="spell-info">Power: ${spell.power} | ${usesText}</div><div class="spell-info">Accuracy: ${spell.accuracy}</div>`;
+                btn.onclick=()=>choosePlayerAction(spell.id);
+                if((!spell.isPermanentNoRecharge&&(playerSpellUsesRemaining[spell.id]===0||playerSpellUsesRemaining[spell.id]===undefined))||(spell.initialWaitTurns&&currentBattleTurn<spell.initialWaitTurns)){
+                    btn.disabled=true;
+                }else{btn.disabled=false;}
+                if(spell.initialWaitTurns&&currentBattleTurn<spell.initialWaitTurns){
+                    btn.innerHTML+=`<div class="spell-info">Wait: ${spell.initialWaitTurns-currentBattleTurn} turns</div>`;
+                }
+                spellChoiceButtons.appendChild(btn);
+            });
+
+            const totalPages = Math.ceil(availableSpells.length / spellsPerPage);
+            moreSpellsBtn.disabled = (currentSpellPageIndex + 1) * spellsPerPage >= availableSpells.length;
+            spellPageInfo.textContent = `Page ${currentSpellPageIndex + 1} of ${totalPages}`;
+
+            spellChoiceContainer.classList.remove('hidden');
+        }
+
+        function unlockNewSpells(){
+            // This function is effectively no-op now, as all spells are available from level 1.
+        }
+
+        function resetSpellUsesForBattle(){
+            playerSpellUsesRemaining={};enemySpellUsesRemaining={};
+            allSpells.forEach(s=>{
+                if(!s.isPermanentNoRecharge){playerSpellUsesRemaining[s.id]=s.maxUsesPerBattle;}
+                // Enemy spells are currently always available for simplicity, but could be limited like player spells
+                // For now, enemy spells don't consume uses from enemySpellUsesRemaining
+            });
+        }
+
+        async function setQuestion(){
+            feedback.textContent="";
+            // Check if there are questions left before trying to display one
+            if (currentQuestionIndex >= shuffledQuestions.length) {
+                // This case should ideally be prevented by disabling the 'Show Question' button
+                // but as a fallback, we can show an alert and force spell choice.
+                showAlert("All questions for this enemy have been answered! Time to use your spells!");
+                showBattleScreen(); // Go back to battle screen to force spell choice
+                renderSpellChoiceButtons(); // Immediately show spell choice
+                return; 
+            }
+
+            const q=shuffledQuestions[currentQuestionIndex];
+            questionText.textContent=q.question;answerButtons.innerHTML="";
+            const sa=shuffleArray([...q.answers]);
+
+            if(synthVoice.speaking)synthVoice.cancel();
+            speakText(q.question);
+            for(let i=0;i<sa.length;i++){
+                const a=sa[i];
+                const b=D.createElement("button");
+                b.textContent=`${answerLabels[i]}. ${a.text}`;
+                b.classList.add("answer-btn");
+                b.addEventListener("click",async e=>{
+                    Array.from(answerButtons.children).forEach(bu=>bu.disabled=true);
+                    speakText(e.target.textContent);
+                    selectAnswer(a.correct,e.target);
+                });
+                answerButtons.appendChild(b);
+            }
+        }
+
+        let playerSelectedActionId=null;
+        function choosePlayerAction(actionId){
+            playerSelectedActionId=actionId;
+            spellChoiceContainer.classList.add('hidden');
+            performPlayerAction(playerSelectedActionId);
+        }
+
+        async function selectAnswer(correct,clickedButton){
+            Array.from(answerButtons.children).forEach(btn => btn.disabled = true);
+
+            if(correct){clickedButton.classList.add('correct-answer');playCorrectSound();}
+            else{clickedButton.classList.add('incorrect-answer');playIncorrectSound();}
+            updateHUD();
+
+            await new Promise(r=>setTimeout(r,1500));
+            clickedButton.classList.remove('correct-answer','incorrect-answer');
+
+            if(correct){
+                currentQuestionIndex++;
+                // If all questions for the current enemy are answered, disable the question button
+                // and directly proceed to spell choice.
+                if (currentQuestionIndex >= shuffledQuestions.length) {
+                    showAlert("You've answered all questions for this enemy! Now, use your spells to defeat them!");
+                    startQuestionBtn.disabled = true; // Disable the button
+                    currentSpellPageIndex = 0;
+                    renderSpellChoiceButtons(); // Directly show spell choice
+                } else {
+                    // Otherwise, proceed to spell choice for the next turn
+                    currentSpellPageIndex = 0;
+                    renderSpellChoiceButtons();
+                }
+            }else{
+                feedback.textContent=`You fumbled!`;feedback.classList.remove('success');feedback.classList.add('damage');
+                await speakText(feedback.textContent);
+                await new Promise(r=>setTimeout(r,1000));
+                currentBattleTurn++;await enemyTurn();
+                if(playerHealth<=0){showBattleResultScreen(false);return;}
+                showBattleScreen();
+                saveGame();
+            }
+        }
+
+        async function performPlayerAction(actionId){
+            const spell=allSpells.find(s=>s.id===actionId);let effectAmount=0;let didMiss=false;
+            const accuracyRoll=Math.random();
+            if(spell.accuracy==="poor"&&accuracyRoll<.6)didMiss=true;else if(spell.accuracy==="okay"&&accuracyRoll<.3)didMiss=true;else if(spell.accuracy==="good"&&accuracyRoll<.1)didMiss=true;
+
+            if(didMiss){feedback.textContent=`${playerName}'s ${spell.name} missed!`;feedback.classList.remove('success','damage');await speakText(feedback.textContent);
+            }else if(spell.type==="attack"){
+                effectAmount=Math.max(1,Math.floor(Math.random()*(spell.maxDamage*enemyMaxHealth-spell.minDamage*enemyMaxHealth+1))+spell.minDamage*enemyMaxHealth);
+                enemyHealth-=effectAmount;if(enemyHealth<0)enemyHealth=0;
+                feedback.textContent=`${playerName} used ${spell.name} and dealt ${Math.floor(effectAmount)} damage!`;feedback.classList.remove('damage');feedback.classList.add('success');
+            }else if(spell.type==="heal"){
+                effectAmount=Math.max(1,Math.floor(Math.random()*(spell.maxHeal*playerMaxHealth-spell.minHeal*playerMaxHealth+1))+spell.minHeal*playerMaxHealth);
+                playerHealth=Math.min(playerMaxHealth,playerHealth+effectAmount);
+                feedback.textContent=`${playerName} used ${spell.name} and healed for ${Math.floor(effectAmount)} health!`;feedback.classList.remove('damage');feedback.classList.add('success');
+            }
+
+            if(!spell.isPermanentNoRecharge){playerSpellUsesRemaining[spell.id]--;}
+            updateHUD();await speakText(feedback.textContent);await new Promise(r=>setTimeout(r,1500));
+
+            if(enemyHealth<=0){
+                showBattleResultScreen(true);
+            } else {
+                currentBattleTurn++;await enemyTurn();
+                if(playerHealth<=0){showBattleResultScreen(false);return;}
+                showBattleScreen();
+            }
+            saveGame();
+        }
+
+        async function enemyTurn(){
+            // Filter spells available to the enemy based on uses and initial wait turns
+            // Ensure Basic Attack (s001) is always available for fallback.
+            const enemyAvailableSpells = allSpells.filter(s => {
+                // Basic Attack (s001) is always available and doesn't consume uses from enemySpellUsesRemaining
+                if (s.id === "s001") return true; 
+                const uses = enemySpellUsesRemaining[s.id] !== undefined ? enemySpellUsesRemaining[s.id] : 0;
+                return uses > 0 && (!s.initialWaitTurns || currentBattleTurn >= s.initialWaitTurns);
+            });
+
+            let chosenSpell = null;
+
+            // Prioritize healing if enemy HP is low and a healing spell is available
+            if (enemyHealth <= enemyMaxHealth * 0.5) {
+                chosenSpell = enemyAvailableSpells.find(s => s.type === 'heal');
+            }
+
+            // If no healing spell chosen or available, choose the highest power attack spell
+            // Exclude Basic Attack (s001) from this initial selection to prioritize other spells
+            if (!chosenSpell) {
+                const attackSpells = enemyAvailableSpells.filter(s => s.type === 'attack' && s.id !== "s001").sort((a, b) => b.power - a.power);
+                if (attackSpells.length > 0) {
+                    chosenSpell = attackSpells[0];
+                }
+            }
+
+            // Fallback to Basic Attack (s001) if no other spell was chosen
+            if (!chosenSpell) {
+                chosenSpell = allSpells.find(s => s.id === "s001"); // Find the Basic Attack spell object
+            }
+
+            let didMiss = false;
+            let effectAmount = 0;
+            let actionMessage = "";
+
+            // Determine if the chosen spell misses based on its accuracy
+            const accuracyRoll = Math.random();
+            if (chosenSpell.accuracy === "poor" && accuracyRoll < 0.6) didMiss = true;
+            else if (chosenSpell.accuracy === "okay" && accuracyRoll < 0.3) didMiss = true;
+            else if (chosenSpell.accuracy === "good" && accuracyRoll < 0.1) didMiss = true;
+            else if (chosenSpell.accuracy === "excellent" && accuracyRoll < 0.02) didMiss = true;
+            
+            // If the spell fumbles (a separate concept from missing, as per previous code)
+            // This part of the logic was for player fumbles on incorrect answers, not spell misses.
+            // Re-evaluating the user's request: "enemy _ attack fumbled" implies a fumble chance for enemy spells too.
+            // Let's add a general fumble chance for the enemy's chosen spell.
+            let didFumble = false;
+            if (Math.random() < 0.05) { // 5% chance to fumble any chosen spell/attack
+                didFumble = true;
+            }
+
+            if (didFumble) {
+                actionMessage = `${enemyName}'s ${chosenSpell.name} fumbled!`;
+            } else if (didMiss) {
+                actionMessage = `${enemyName}'s ${chosenSpell.name} missed!`;
+            } else {
+                if (chosenSpell.type === "attack") {
+                    effectAmount = Math.max(1, Math.floor(Math.random() * (chosenSpell.maxDamage * playerMaxHealth - chosenSpell.minDamage * playerMaxHealth + 1)) + chosenSpell.minDamage * playerMaxHealth);
+                    playerHealth -= effectAmount;
+                    if (playerHealth < 0) playerHealth = 0;
+                    actionMessage = `${enemyName} used ${chosenSpell.name} and dealt ${Math.floor(effectAmount)} damage!`;
+                } else if (chosenSpell.type === "heal") {
+                    effectAmount = Math.max(1, Math.floor(Math.random() * (chosenSpell.maxHeal * enemyMaxHealth - chosenSpell.minHeal * enemyMaxHealth + 1)) + chosenSpell.minHeal * enemyMaxHealth);
+                    enemyHealth = Math.min(enemyMaxHealth, enemyHealth + effectAmount);
+                    actionMessage = `${enemyName} used ${chosenSpell.name} and healed for ${Math.floor(effectAmount)} health!`;
+                }
+            }
+
+            // Decrease spell uses if it's not a permanent spell like Basic Attack (s001)
+            // Note: enemySpellUsesRemaining is currently not being decremented for non-permanent spells.
+            // If we want enemy spells to have limited uses per battle, we need to implement that logic.
+            // For now, I'll assume enemy spells other than basic attack have infinite uses unless specified.
+            // The previous resetSpellUsesForBattle function had a commented out section for enemy spells.
+            // Let's re-enable that for consistency.
+            if (!chosenSpell.isPermanentNoRecharge) {
+                 if (enemySpellUsesRemaining[chosenSpell.id] !== undefined) {
+                    enemySpellUsesRemaining[chosenSpell.id]--;
+                }
+            }
+
+            updateHUD();
+            showAlert(actionMessage);
+            await new Promise(r => setTimeout(r, 2000));
+        }
+
+        function startNextQuestion() {
+            showQuestionScreen();
+        }
+
+        // --- Level Up and Next Battle Preparation ---
+        function levelUpOrNextBattle(){
+            console.log(`Debug XP/Level: *** Before Level Up Check *** Current Level: ${level}, Current XP: ${xp}, XP Needed: ${xpNeeded}`);
+            xp += 50; // Grant XP for defeating an enemy
+            if(xp >= xpNeeded){
+                xp -= xpNeeded;
+                level++;
+                xpNeeded = Math.floor(xpNeeded * 1.5); // Increase XP needed for next level
+                showAlert(`${playerName} leveled up to Level ${level}!`);
+                console.log(`Debug XP/Level: Player Leveled Up! New Level: ${level}, Remaining XP: ${xp}, New XP Needed: ${xpNeeded}`);
+            } else {
+                console.log(`Debug XP/Level: Not enough XP to level up. Current XP: ${xp}, XP Needed: ${xpNeeded}`);
+            }
+            
+            // Prepare for the next battle:
+            enemyName = currentZone.enemies[Math.floor(Math.random() * currentZone.enemies.length)];
+            currentQuestionIndex = 0; // Reset question index for the new battle
+            shuffledQuestions = shuffleArray([...currentZone.questions]); // Reshuffle all questions for the new battle
+
+            // CRITICAL: Recalculate and reset player/enemy health based on the NEW level
+            const oldPlayerMaxHealth = playerMaxHealth;
+            const oldEnemyMaxHealth = enemyMaxHealth;
+            playerMaxHealth = getPlayerHealth(); // Get new max health for player based on new level
+            playerHealth = playerMaxHealth; // Reset player's current health to their new max
+            enemyMaxHealth = getEnemyHealth(level); // Get new max health for enemy based on new level
+            enemyHealth = enemyMaxHealth; // Reset enemy's current health to their new max
+
+            currentBattleTurn = 0;
+            resetSpellUsesForBattle();
+            
+            console.log(`Debug HP: Advancing to Level ${level}. Player Max HP: ${oldPlayerMaxHealth} -> ${playerMaxHealth}, Player Current HP: ${playerHealth}. Enemy Max HP: ${oldEnemyMaxHealth} -> ${enemyMaxHealth}, Enemy Current HP: ${enemyHealth}.`);
+            showBattleScreen();
+            saveGame();
+        }
+
+
+        // --- Event Listeners ---
+        startQuestionBtn.addEventListener("click", () => { startQuestionBtn.disabled = true; startNextQuestion(); });
+        continueBtn.addEventListener("click",()=>{congratsScreen.classList.add("hidden");if(synthVoice.speaking)synthVoice.cancel();levelUpOrNextBattle();});
+        continueNextLevelBtn.addEventListener("click",()=>{zoneCompletedScreen.classList.add("hidden");if(synthVoice.speaking)synthVoice.cancel();levelUpOrNextBattle();}); 
+
+        retryBtn.addEventListener("click",()=>{sorryScreen.classList.add("hidden");if(synthVoice.speaking)synthVoice.cancel();showBattleScreen();});
+        
+        retryZoneBtn.addEventListener("click",()=>{
+            if(isGameOverDueToLoss){
+                retryCurrentBattle();
+            } else {
+                localStorage.removeItem('prodigyScienceGameSave');playerNameInput.value="";playerName="";level=1;xp=0;xpNeeded=50;currentZone=null;currentQuestionIndex=0;shuffledQuestions=[];showWelcomeScreen();
+            }
+        });
+        startGameBtn.addEventListener("click",async ()=>{
+            if(localStorage.getItem('prodigyScienceGameSave')){if(!confirm("Starting a new adventure will erase your saved progress. Are you sure?"))return;localStorage.removeItem('prodigyScienceGameSave');playerNameInput.value="";playerNameInput.disabled=false;}
+            const name=playerNameInput.value.trim();if(!name){showAlert("Please enter your name to start the adventure!");return;}
+            playerName=name;
+            try {
+                await Tone.start();
+                console.log("Debug Music: AudioContext started/resumed by Start Game button click. State:", Tone.context.state);
+                initMusicProg(); 
+            } catch (e) {
+                console.error("Debug Music: Error starting AudioContext on Start Game click:", e);
+                showAlert("Could not start game music. Please ensure your browser allows audio autoplay and try again.");
+            }
+            showZoneScreen(); 
+            saveGame();
+        });
+        continueGameBtn.addEventListener("click",async ()=>{
+            if(loadGame()){
+                try {
+                    await Tone.start();
+                    console.log("Debug Music: AudioContext started/resumed by Continue Game button click. State:", Tone.context.state);
+                    initMusicProg(); 
+                } catch (e) {
+                    console.error("Debug Music: Error starting AudioContext on Continue Game click:", e);
+                    showAlert("Could not start game music. Please ensure your browser allows audio autoplay and try again.");
+                }
+                currentBattleTurn=0;resetSpellUsesForBattle();showBattleScreen();
+            }
+            else{showAlert("No saved game found! Please start a New Adventure.");continueGameBtn.classList.add('hidden');startGameBtn.textContent="Start Game";playerNameInput.disabled=false;}
+        });
+        D.querySelectorAll('.speak-button').forEach(b=>{b.addEventListener('click',e=>{const t=e.target.dataset.target;const el=D.getElementById(t);if(el)speakText(el.textContent);});});
+        
+        moreSpellsBtn.addEventListener('click', () => {
+            const availableSpells = allSpells.slice().sort((a,b)=>a.id.localeCompare(b.id)); 
+            const totalPages = Math.ceil(availableSpells.length / spellsPerPage);
+            currentSpellPageIndex = (currentSpellPageIndex + 1) % totalPages;
+            renderSpellChoiceButtons();
+        });
+
+        showWelcomeScreen();
+    </script>
 </body>
 </html>
